@@ -1,0 +1,11 @@
+"use client";
+
+import DashboardView from "./components/DashboardView";
+
+export default function Dashboard() {
+  return (
+    <div>
+      <DashboardView />
+    </div>
+  );
+}
