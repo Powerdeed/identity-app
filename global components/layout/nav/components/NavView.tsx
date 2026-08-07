@@ -12,6 +12,7 @@ import "@global components/icons/icons";
 import useNav from "../hooks/useNav";
 import { useGlobals } from "@globals";
 import { hasPermission, PERMISSIONS, useAuth } from "@app/auth";
+import { toUserInitials } from "../utils/toUserInitials";
 
 export default function NavView() {
   const router = useRouter();
@@ -77,11 +78,8 @@ export default function NavView() {
           <div className="">{user?.role}</div>
         </div>
 
-        <div className="p-2 border rounded-full bg-(--primary-blue)">
-          <FontAwesomeIcon
-            icon={["far", "user"]}
-            className="text-white text-style__body"
-          />
+        <div className="p-2 border w-10 h-10 horizontal-layout justify-center rounded-full bg-(--primary-blue) text-white">
+          {toUserInitials(user?.name || "user")}
         </div>
 
         {/* DROPDOWN PROFILE OPTIONS */}

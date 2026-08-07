@@ -13,6 +13,7 @@ type ButtonProps = {
   icon?: ReactNode;
   children?: ReactNode;
   disabled?: boolean;
+  flipDirection?: boolean;
 };
 
 const buttonTypeClassNames: Record<ButtonType, string> = {
@@ -31,6 +32,7 @@ export default function Button({
   icon,
   children,
   disabled,
+  flipDirection,
 }: ButtonProps) {
   return (
     <button
@@ -46,9 +48,9 @@ export default function Button({
       disabled={disabled}
     >
       <div
-        className={
+        className={`${
           icon || children ? "flex justify-center items-center gap-2" : ""
-        }
+        } ${flipDirection && "flex-row-reverse"}`}
       >
         {icon}
         <div>{buttonText}</div>

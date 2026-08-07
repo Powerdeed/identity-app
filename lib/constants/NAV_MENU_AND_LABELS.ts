@@ -9,37 +9,37 @@ export const menuItems = [
   },
   {
     label: "People",
-    icon: "user-tie",
+    icon: "user-group",
     requiredPermission: PERMISSIONS.IDENTITY_USERS_READ,
   },
   {
     label: "Joiners/Movers/Leavers",
-    icon: "list-check",
+    icon: "user-plus",
     requiredPermission: PERMISSIONS.IDENTITY_JML_READ,
   },
   {
     label: "Access Governance",
-    icon: "folder",
+    icon: "shield-halved",
     requiredPermission: PERMISSIONS.IDENTITY_ACCESS_READ,
   },
   {
     label: "Sessions & Devices",
-    icon: "file-lines",
+    icon: "tv",
     requiredPermission: PERMISSIONS.IDENTITY_SESSIONS_READ,
   },
   {
     label: "Security Activity",
-    icon: "newspaper",
+    icon: "user-shield",
     requiredPermission: PERMISSIONS.IDENTITY_SECURITY_READ,
   },
   {
     label: "Access Reviews",
-    icon: "images",
+    icon: "clipboard-list",
     requiredPermission: PERMISSIONS.IDENTITY_ACCESS_REVIEWS_READ,
   },
   {
     label: "Policies & Configuration",
-    icon: "calendar",
+    icon: "gear",
     requiredPermission: PERMISSIONS.IDENTITY_POLICIES_READ,
   },
 ] satisfies {

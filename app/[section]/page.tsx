@@ -33,7 +33,7 @@ export default function Section({
   const sectionMap: Record<MenuLabels, React.ReactNode> = {
     Dashboard: <Dashboard />,
     People: <People />,
-    "Joiners/Movers/Leavers": <JML />,
+    "joiners-movers-leavers": <JML />,
     "Access Governance": <AccessGovernance />,
     "Sessions & Devices": <SessionsAndDevices />,
     "Security Activity": <SecurityActivity />,
