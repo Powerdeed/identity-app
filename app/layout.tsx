@@ -6,9 +6,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 
 import "@global components/icons/icons";
-import Nav from "@global components/layout/nav/Nav";
-import SideBar from "@global components/layout/SideBar";
-import { GlobalProvider, UnsavedChangesGuard } from "@globals";
+import AppShell from "@global components/layout/AppShell";
 import { AuthorizationProvider } from "@app/auth";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -58,15 +56,7 @@ export default function RootLayout({
         <Analytics />
 
         <AuthorizationProvider>
-          <GlobalProvider>
-            <Nav />
-
-            <SideBar />
-
-            <UnsavedChangesGuard />
-
-            {children}
-          </GlobalProvider>
+          <AppShell>{children}</AppShell>
         </AuthorizationProvider>
       </body>
     </html>

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 
-import Fitler from "@/global components/ui/Fitler";
+import Sort from "@/global components/ui/Sort";
+
 import useDashboard from "../hooks/useDashboard";
 import type { Change } from "../hooks/useDashboardApi";
 
@@ -20,10 +21,10 @@ export default function Changes() {
         <div className="p-2.5 border-b border-(--secondary-grey) horizontal-layout">
           <div className="flex-1 text-style__big-text">Recent Changes</div>
 
-          <Fitler
-            options={["Lifecycle", "Access"]}
-            selectedFilters={selectedFilters}
-            setSelectedFilters={setSelectedFilters}
+          <Sort
+            sortOptions={["Lifecycle", "Access"]}
+            selectedSortOptions={selectedFilters}
+            setSelectedSortOptions={setSelectedFilters}
             flipDirection
           />
         </div>

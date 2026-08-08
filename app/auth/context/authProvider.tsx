@@ -10,7 +10,7 @@ export default function AuthorizationProvider({
   children: ReactNode;
 }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loadingUser, setLoadingUser] = useState(false);
+  const [loadingUser, setLoadingUser] = useState(true);
   const [userError, setUserError] = useState("");
 
   return (

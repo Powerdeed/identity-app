@@ -26,6 +26,7 @@ import {
   faTriangleExclamation,
   faBan,
   faFilter,
+  faSort,
 } from "@fortawesome/free-solid-svg-icons";
 
 import {
@@ -74,4 +75,5 @@ library.add(
   faTriangleExclamation,
   faBan,
   faFilter,
+  faSort,
 );

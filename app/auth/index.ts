@@ -1,4 +1,5 @@
 export { default as AuthorizationProvider } from "./context/authProvider";
+export { default as AuthGuard } from "./components/AuthGuard";
 
 export { default as AuthProvider } from "./context/authProvider";
 export * from "./context/authProvider";

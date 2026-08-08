@@ -11,5 +11,4 @@ export const KEYCLOAK_CLIENT_ID =
   process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || "identity-app";
 
 export const IDENTITY_API_BASE_URL =
-  process.env.NEXT_PUBLIC_IDENTITY_API_BASE_URL?.trim() ||
-  "http://localhost:3000";
+  process.env.NEXT_PUBLIC_IDENTITY_API_BASE_URL?.trim();
