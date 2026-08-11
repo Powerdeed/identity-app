@@ -12,7 +12,7 @@ export * from "./conversions/toPascalCase";
 export * from "./conversions/urlConversions";
 
 // helpers
-export * from "./helper functions/currentDate";
+export * from "../global-components/layout/date/utils/currentDate";
 export * from "./helper functions/handleEmailFormat";
 export * from "./helper functions/truncateTxt";
 

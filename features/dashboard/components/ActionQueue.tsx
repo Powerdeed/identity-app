@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import useDashboard from "../hooks/useDashboard";
 import type { Action } from "../hooks/useDashboardApi";
 import Link from "next/link";
+import ContainerTitle from "@/global-components/ui/ContainerTitle";
 
 export default function ActionQueue() {
   const { actions } = useDashboard();
@@ -11,13 +12,14 @@ export default function ActionQueue() {
   return (
     <div className="feature-container-vertical">
       <div className="vertical-layout__inner">
-        <div className="p-2.5 border-b border-(--secondary-grey) horizontal-layout">
-          <div className="flex-1 text-style__big-text">Action Queue</div>
-
-          <div className="text-style__small-text text-(--primary-grey)">
-            6 items
-          </div>
-        </div>
+        <ContainerTitle
+          title="Action Queue"
+          el={
+            <div className="text-style__small-text text-(--primary-grey)">
+              6 items
+            </div>
+          }
+        />
 
         {actions.actionQueue &&
           actions.actionQueue.map((action, i) => (

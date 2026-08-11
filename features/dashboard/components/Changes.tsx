@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 
-import Sort from "@/global components/ui/Sort";
+import Sort from "@/global-components/ui/Sort";
 
 import useDashboard from "../hooks/useDashboard";
 import type { Change } from "../hooks/useDashboardApi";
+import ContainerTitle from "@/global-components/ui/ContainerTitle";
 
 export default function Changes() {
   const [selectedFilters, setSelectedFilters] = useState([
@@ -18,16 +19,17 @@ export default function Changes() {
   return (
     <div className="feature-container-vertical">
       <div className="vertical-layout__inner">
-        <div className="p-2.5 border-b border-(--secondary-grey) horizontal-layout">
-          <div className="flex-1 text-style__big-text">Recent Changes</div>
-
-          <Sort
-            sortOptions={["Lifecycle", "Access"]}
-            selectedSortOptions={selectedFilters}
-            setSelectedSortOptions={setSelectedFilters}
-            flipDirection
-          />
-        </div>
+        <ContainerTitle
+          title="Recent Changes"
+          el={
+            <Sort
+              sortOptions={["Lifecycle", "Access"]}
+              selectedSortOptions={selectedFilters}
+              setSelectedSortOptions={setSelectedFilters}
+              flipDirection
+            />
+          }
+        />
 
         {actions.recentChanges
           .filter((changes) =>

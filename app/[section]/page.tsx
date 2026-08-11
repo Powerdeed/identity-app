@@ -12,7 +12,7 @@ import { MenuLabels } from "@lib/constants/NAV_MENU_AND_LABELS";
 // features
 
 // component
-import People from "@/features/people/People";
+import Employees from "@/features/employees/Employees";
 import Dashboard from "@/features/dashboard/Dashboard";
 import JML from "@/features/JML/JML";
 import AccessGovernance from "@/features/access-governance/AccessGovernance";
@@ -32,7 +32,7 @@ export default function Section({
 
   const sectionMap: Record<MenuLabels, React.ReactNode> = {
     Dashboard: <Dashboard />,
-    People: <People />,
+    Employees: <Employees />,
     "joiners-movers-leavers": <JML />,
     "Access Governance": <AccessGovernance />,
     "Sessions & Devices": <SessionsAndDevices />,
@@ -45,7 +45,7 @@ export default function Section({
 
   return (
     <div
-      className={`pt-15 page-with-panels ${globalStates.sideBarOpen ? "pl-65" : "pl-15"}`}
+      className={`page-with-panels min-w-0 max-w-full overflow-x-hidden pt-15 ${globalStates.sideBarOpen ? "pl-65" : "pl-15"}`}
     >
       {content}
     </div>

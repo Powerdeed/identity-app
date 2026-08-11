@@ -8,7 +8,7 @@ export const menuItems = [
     requiredPermission: PERMISSIONS.IDENTITY_DASHBOARD_MANAGE,
   },
   {
-    label: "People",
+    label: "Employees",
     icon: "user-group",
     requiredPermission: PERMISSIONS.IDENTITY_USERS_READ,
   },

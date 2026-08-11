@@ -5,13 +5,6 @@
   --foreground: #171717;
 }
 
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-} */
-
 @theme inline {
   --font-geist-sans: "Plus Jakarta Sans", "Open Sans", sans-serif;
 
@@ -144,7 +137,7 @@ body {
 
 /********** PAGE STYLES **********/
 .uniform-page-display {
-  @apply p-5 flex flex-col gap-5;
+  @apply min-w-0 max-w-full p-5 flex flex-col gap-5;
 }
 
 /********** TEXT STYLES **********/
@@ -226,7 +219,7 @@ body {
 }
 
 .containerize {
-  @apply w-fit flex items-center gap-2 py-1 px-2 border border-(--terciary-grey)/30 rounded-[10px];
+  @apply w-fit flex items-center gap-2 py-1 px-2 bg-white border border-(--terciary-grey) rounded-[10px];
 }
 
 .buttonize {
@@ -263,7 +256,7 @@ body {
 }
 
 .selector-dropdown {
-  @apply absolute duration-80 p-1 border border-(--terciary-grey) bg-white rounded-[10px] left-0 top-10;
+  @apply absolute duration-80 p-1 border border-(--terciary-grey) bg-white rounded-[10px] left-0;
 }
 
 .selector-dropdown-option {

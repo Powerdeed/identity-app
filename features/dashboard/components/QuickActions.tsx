@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/global components/ui/Button";
+import Button from "@/global-components/ui/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 
@@ -11,13 +11,13 @@ export default function QuickActions() {
 
       <div className="horizontal-layout">
         <Link href="/joiners-movers-leavers">
-          <Button buttonText="Provision Person" flipDirection>
+          <Button buttonText="Provision Employee" flipDirection>
             <FontAwesomeIcon icon={["fas", "user-plus"]} />
           </Button>
         </Link>
 
-        <Link href="/people">
-          <Button buttonType="light" buttonText="Find Person" flipDirection>
+        <Link href="/employees">
+          <Button buttonType="light" buttonText="Find Employee" flipDirection>
             <FontAwesomeIcon icon={["fas", "magnifying-glass"]} />
           </Button>
         </Link>

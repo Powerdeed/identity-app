@@ -1,6 +1,6 @@
 "use client";
 
-import { SectionTitle } from "@/global components/ui/Title";
+import { SectionTitle } from "@/global-components/ui/Title";
 import DashboardCards from "./DashboardCards";
 import ActionQueue from "./ActionQueue";
 import Changes from "./Changes";
