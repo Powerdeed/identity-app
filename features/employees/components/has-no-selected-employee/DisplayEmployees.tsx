@@ -13,13 +13,17 @@ import SearchFilterSort, {
 } from "./SearchFilterSort";
 import DataTable from "@/global-components/ui/DataTable";
 import { PAGE_META_DATA } from "../../constants/PAGE_META_DATA";
-import { EmployeeTableRow } from "../../types/employeesTypes";
+import { EmployeeStatus, EmployeeTableRow } from "../../types/employeesTypes";
+import { User } from "@/app/auth";
+import { getEmployee } from "../../services/employee";
+import { execute } from "@/lib";
 
 const employeeTableColumns = createEmployeeTableColumns();
 
 export default function DisplayEmployees() {
-  const { states } = useEmployees();
+  const { state } = useEmployees();
   const [searchValue, setSearchValue] = useState("");
+  const [showProvisionNotice, setShowProvisionNotice] = useState(false);
   const [statusFilter, setStatusFilter] =
     useState<StatusFilter>("All statuses");
   const [departmentFilter, setDepartmentFilter] =
@@ -28,23 +32,28 @@ export default function DisplayEmployees() {
     useState<EmployeeSortOption>("Default order");
 
   const normalizedSearch = searchValue.trim().toLocaleLowerCase();
-  const filteredEmployees = states.employees.filter((employee) => {
+  const filteredEmployees = state.employees.filter((employee) => {
     const matchesSearch =
       !normalizedSearch ||
       [
         employee.name,
         employee.email,
-        employee.department,
-        employee.title,
-        employee.manager,
+        employee.profile?.department,
+        employee.profile?.jobTitle,
+        employee.employment?.departmentId,
+        employee.employment?.jobTitle,
+        employee.employment?.managerId,
         employee.status,
       ].some((value) => value?.toLocaleLowerCase().includes(normalizedSearch));
+    const employeeStatus = getEmployeeStatus(employee);
     const matchesStatus =
       statusFilter === "All statuses" ||
-      employee.status === statusFilter.toLocaleLowerCase();
+      employeeStatus === statusFilter.toLocaleLowerCase();
+    const employeeDepartment =
+      employee.employment?.departmentId ?? employee.profile?.department;
     const matchesDepartment =
       departmentFilter === "All Departments" ||
-      employee.department?.toLocaleLowerCase() ===
+      employeeDepartment?.toLocaleLowerCase() ===
         departmentFilter.toLocaleLowerCase();
 
     return matchesSearch && matchesStatus && matchesDepartment;
@@ -66,19 +75,24 @@ export default function DisplayEmployees() {
     return 0;
   });
 
-  const visibleEmployees = sortedEmployees.slice(
-    (states.currentPage - 1) * states.pageSize,
-    states.currentPage * states.pageSize,
-  );
+  const visibleEmployees = sortedEmployees
+    .slice(
+      (state.currentPage - 1) * state.pageSize,
+      state.currentPage * state.pageSize,
+    )
+    .map(toEmployeeTableRow);
 
   const updateCriteria = <T,>(setter: (value: T) => void, value: T) => {
     setter(value);
-    states.setCurrentPage(1);
+    state.setCurrentPage(1);
   };
 
-  const getEmployee = (employeeData: EmployeeTableRow) => {
-    states.setSelectedEmployee(employeeData.id);
-  };
+  const fetchEmployeeData = async (employeeData: EmployeeTableRow) =>
+    execute(() => getEmployee(employeeData.id), {
+      setLoading: state.setFetchingEmployees,
+      setError: state.setFetchingEmployeesError,
+      onSuccess: (employee) => state.setSelectedEmployee(employee),
+    });
 
   return (
     <div className="uniform-page-display">
@@ -90,7 +104,11 @@ export default function DisplayEmployees() {
           />
         </div>
 
-        <Button buttonText="Provision Employee" flipDirection>
+        <Button
+          buttonText="Provision Employee"
+          flipDirection
+          clickAction={() => setShowProvisionNotice(true)}
+        >
           <FontAwesomeIcon icon={["fas", "user-plus"]} />
         </Button>
       </div>
@@ -108,12 +126,49 @@ export default function DisplayEmployees() {
         onSortChange={(value) => updateCriteria(setSortOption, value)}
       />
 
+      {showProvisionNotice ? (
+        <div
+          className="overlay"
+          onClick={() => setShowProvisionNotice(false)}
+        >
+          <div
+            className="w-full max-w-xl rounded-[10px] border border-(--terciary-grey) bg-white p-5 shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-4 flex items-start gap-3">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-(--secondary-blue)/15 text-(--secondary-blue)">
+                <FontAwesomeIcon icon={["fas", "user-plus"]} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-style__big-text text-(--primary-blue)">
+                  Provisioning flow
+                </div>
+                <div className="mt-1 text-style__small-text text-(--primary-grey)">
+                  Employee provisioning is backed by Keycloak user search and
+                  identity-service profile creation. Use this once the dedicated
+                  provisioning picker is connected; existing employees can be
+                  managed from the workforce directory.
+                </div>
+              </div>
+              <button
+                type="button"
+                aria-label="Close provisioning notice"
+                className="buttonize rounded-[10px] p-2.5 text-(--primary-grey) hover:bg-(--terciary-grey)/30 hover:text-(--primary-blue)"
+                onClick={() => setShowProvisionNotice(false)}
+              >
+                <FontAwesomeIcon icon={["fas", "xmark"]} />
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <DataTable
         title="Workforce directory"
         description={
-          filteredEmployees.length === states.employees.length
-            ? `${states.employees.length} ${states.employees.length === 1 ? "employee" : "employees"}`
-            : `${filteredEmployees.length} of ${states.employees.length} employees`
+          filteredEmployees.length === state.employees.length
+            ? `${state.employees.length} ${state.employees.length === 1 ? "employee" : "employees"}`
+            : `${filteredEmployees.length} of ${state.employees.length} employees`
         }
         headerAside={
           <div className="flex items-center gap-2 text-style__small-text text-(--primary-grey)">
@@ -127,13 +182,13 @@ export default function DisplayEmployees() {
         minWidthClassName="min-w-280"
         pagination={{
           totalItems: filteredEmployees.length,
-          currentPage: states.currentPage,
-          pageSize: states.pageSize,
-          onPageChange: states.setCurrentPage,
-          onPageSizeChange: states.setPageSize,
+          currentPage: state.currentPage,
+          pageSize: state.pageSize,
+          onPageChange: state.setCurrentPage,
+          onPageSizeChange: state.setPageSize,
           dataType: "employees",
         }}
-        getData={getEmployee}
+        getData={fetchEmployeeData}
         emptyState={
           <div className="grid min-h-44 place-items-center px-5 py-10 text-center">
             <div>
@@ -156,9 +211,45 @@ export default function DisplayEmployees() {
   );
 }
 
-function getActivityTime(employee: EmployeeTableRow) {
-  if (!employee.lastActivity) return 0;
+function toEmployeeTableRow(employee: User): EmployeeTableRow {
+  const accessRoles = employee.access?.roles ?? [];
+  const appAccess = employee.access?.appAccess ?? [];
+  const status = getEmployeeStatus(employee);
+  const lastActivity = employee.activitySummary?.lastActiveAt ?? null;
 
-  const time = new Date(employee.lastActivity).getTime();
+  return {
+    id: employee.id,
+    name: employee.name,
+    email: employee.email,
+    department:
+      employee.employment?.departmentId ?? employee.profile?.department,
+    title: employee.employment?.jobTitle ?? employee.profile?.jobTitle,
+    manager: employee.employment?.managerId,
+    status,
+    appCount: appAccess.length,
+    roleCount: accessRoles.length,
+    sessionCount: 0,
+    sessions: 0,
+    lastActivity,
+  };
+}
+
+function getEmployeeStatus(employee: User): EmployeeStatus {
+  if (employee.status) return employee.status;
+
+  const accountStatus = employee.security?.accountStatus;
+  if (accountStatus === "active" || accountStatus === "suspended") {
+    return accountStatus;
+  }
+
+  return "unset";
+}
+
+function getActivityTime(employee: User) {
+  const lastActivity = employee.activitySummary?.lastActiveAt;
+
+  if (!lastActivity) return 0;
+
+  const time = new Date(lastActivity).getTime();
   return Number.isNaN(time) ? 0 : time;
 }

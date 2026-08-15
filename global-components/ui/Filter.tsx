@@ -10,6 +10,7 @@ export default function Filter<T extends string | number>({
   selectFirstOption,
   placeholder = "select option",
   dropdownSelectorDirection = "downwards",
+  className = "",
 }: {
   filterOptions: readonly T[];
   selectedOption: T;
@@ -17,6 +18,7 @@ export default function Filter<T extends string | number>({
   selectFirstOption: boolean;
   placeholder: string | number;
   dropdownSelectorDirection?: "upwards" | "downwards";
+  className?: string;
 }) {
   const [firstOptionSelected, setFirstOptionSelected] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
@@ -58,7 +60,7 @@ export default function Filter<T extends string | number>({
   return (
     <div
       ref={selectorRef}
-      className="selector z-1"
+      className={`selector ${isClicked ? "z-50" : "z-10"} ${className}`}
       onClick={() => setIsClicked((prev) => !prev)}
     >
       <div className="h-6 font-bold flex items-center">

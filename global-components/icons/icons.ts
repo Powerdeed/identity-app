@@ -32,6 +32,7 @@ import {
   faEllipsis,
   faInfoCircle,
   faUnlock,
+  faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 
 import {
@@ -88,4 +89,5 @@ library.add(
   faInfoCircle,
   faCalendar,
   faUnlock,
+  faPlus,
 );

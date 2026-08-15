@@ -2,7 +2,7 @@
 
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useRef, useState } from "react";
+import { CSSProperties, useEffect, useRef, useState } from "react";
 
 import { getDateFormatted } from "../utils/currentDate";
 import Calendar from "./Calendar";
@@ -14,9 +14,15 @@ interface DateRangePickerProps {
 }
 
 type ActiveBoundary = "start" | "end" | null;
+type CalendarDialogPosition = Pick<
+  CSSProperties,
+  "left" | "top" | "maxHeight" | "visibility"
+>;
 
 const getNextMonth = (date: Date) =>
   new Date(date.getFullYear(), date.getMonth() + 1, 1);
+
+const VIEWPORT_PADDING = 12;
 
 export default function DateRangePicker({
   startDate,
@@ -27,7 +33,10 @@ export default function DateRangePicker({
   const [activeBoundary, setActiveBoundary] = useState<ActiveBoundary>("start");
   const [draftStart, setDraftStart] = useState<Date | null>(startDate);
   const [draftEnd, setDraftEnd] = useState<Date | null>(endDate);
+  const [dialogPosition, setDialogPosition] =
+    useState<CalendarDialogPosition>({ visibility: "hidden" });
   const pickerRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!openCalendar) return;
@@ -42,10 +51,60 @@ export default function DateRangePicker({
     return () => document.removeEventListener("mousedown", closeOnOutsideClick);
   }, [openCalendar]);
 
+  useEffect(() => {
+    if (!openCalendar) return;
+
+    const positionDialog = () => {
+      const triggerRect = pickerRef.current?.getBoundingClientRect();
+      const dialogRect = dialogRef.current?.getBoundingClientRect();
+
+      if (!triggerRect || !dialogRect) return;
+
+      const availableBelow =
+        window.innerHeight - triggerRect.bottom - VIEWPORT_PADDING;
+      const availableAbove = triggerRect.top - VIEWPORT_PADDING;
+      const shouldOpenAbove =
+        availableBelow < dialogRect.height && availableAbove > availableBelow;
+      const availableHeight = shouldOpenAbove ? availableAbove : availableBelow;
+      const maxHeight = Math.max(220, availableHeight);
+      const top = shouldOpenAbove
+        ? Math.max(
+            VIEWPORT_PADDING,
+            triggerRect.top - Math.min(dialogRect.height, maxHeight) - 4,
+          )
+        : Math.min(
+            triggerRect.bottom + 4,
+            window.innerHeight - VIEWPORT_PADDING - maxHeight,
+          );
+      const left = Math.min(
+        Math.max(VIEWPORT_PADDING, triggerRect.left),
+        window.innerWidth - VIEWPORT_PADDING - dialogRect.width,
+      );
+
+      setDialogPosition({
+        left: Math.max(VIEWPORT_PADDING, left),
+        top: Math.max(VIEWPORT_PADDING, top),
+        maxHeight,
+        visibility: "visible",
+      });
+    };
+
+    const animationFrame = window.requestAnimationFrame(positionDialog);
+    window.addEventListener("resize", positionDialog);
+    window.addEventListener("scroll", positionDialog, true);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener("resize", positionDialog);
+      window.removeEventListener("scroll", positionDialog, true);
+    };
+  }, [openCalendar]);
+
   const openFor = (boundary: Exclude<ActiveBoundary, null>) => {
     setDraftStart(startDate);
     setDraftEnd(endDate);
     setActiveBoundary(boundary);
+    setDialogPosition({ visibility: "hidden" });
     setOpenCalendar(true);
   };
 
@@ -114,9 +173,11 @@ export default function DateRangePicker({
 
       {openCalendar ? (
         <div
+          ref={dialogRef}
           role="dialog"
           aria-label="Select activity date range"
-          className="absolute left-0 top-full z-20 mt-1 max-w-[calc(100vw-2.5rem)] rounded-[10px] border border-(--terciary-grey) bg-white p-3 shadow-lg"
+          style={dialogPosition}
+          className="section-scrollbar fixed z-50 max-w-[calc(100vw-1.5rem)] overflow-auto rounded-[10px] border border-(--terciary-grey) bg-white p-3 shadow-lg"
           onKeyDown={(event) => {
             if (event.key === "Escape") setOpenCalendar(false);
           }}

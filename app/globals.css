@@ -248,7 +248,7 @@ body {
 }
 
 .overlay {
-  @apply fixed pl-70 pr-5 w-full h-full top-0 left-0 flex flex-col justify-center items-center bg-(--terciary-grey)/40 z-2;
+  @apply fixed pl-70 pr-5 w-full h-full top-0 left-0 flex flex-col justify-center items-center bg-(--terciary-grey)/40 z-60;
 }
 
 .selector {
@@ -256,7 +256,7 @@ body {
 }
 
 .selector-dropdown {
-  @apply absolute duration-80 p-1 border border-(--terciary-grey) bg-white rounded-[10px] left-0;
+  @apply absolute z-50 duration-80 p-1 border border-(--terciary-grey) bg-white rounded-[10px] left-0;
 }
 
 .selector-dropdown-option {

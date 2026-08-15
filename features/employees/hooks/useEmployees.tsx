@@ -1,9 +1,11 @@
 "use client";
 
+import useEmployeesApi from "./useEmployeesApi";
 import useEmployeesStates from "./useEmployeesStates";
 
 export default function useEmployees() {
-  const states = useEmployeesStates();
+  const state = useEmployeesStates();
+  const api = useEmployeesApi();
 
-  return { states };
+  return { state, actions: { ...api } };
 }

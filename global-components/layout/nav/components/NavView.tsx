@@ -22,12 +22,42 @@ import {
 
 import { getInitials } from "../utils/getInitials";
 
+const roleDisplayPriority = [
+  "platform.super_admin",
+  "platform.security_admin",
+  "command_center.admin",
+  "cms.admin",
+];
+
+function formatRoleLabel(role?: string) {
+  if (!role) return "No role assigned";
+
+  return role
+    .replace(/[._-]+/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function getPrimaryRoleLabel(user: ReturnType<typeof useAuthStates>["user"]) {
+  const assignedRoles = user?.access?.roles ?? [];
+
+  const primaryRole =
+    roleDisplayPriority.find((role) =>
+      assignedRoles.some((assignment) => assignment.roleId === role),
+    ) ?? assignedRoles[0]?.roleId;
+
+  return formatRoleLabel(primaryRole ?? user?.role);
+}
+
 export default function NavView() {
   const router = useRouter();
   const { globalStates } = useGlobals();
   const { navStates } = useNav();
   const { user } = useAuthStates();
   const { handleLogout } = useLogout();
+  const primaryRoleLabel = getPrimaryRoleLabel(user);
 
   const canManageUsers = hasPermission(user, PERMISSIONS.IDENTITY_USERS_MANAGE);
   const canManageSettings = hasPermission(
@@ -37,7 +67,7 @@ export default function NavView() {
 
   return (
     <nav
-      className={`fixed h-15 top-0 ${globalStates.sideBarOpen ? "left-65  w-[calc(100vw-260px)]" : "left-15  w-[calc(100vw-70px)]"} flex gap-2.5 items-center border-b border-(--terciary-grey) backdrop-blur shadow-[0_4px_6px_-1px_rgba(51,51,51,0.1)] py-2.5 px-5 text-style__body z-1`}
+      className={`fixed h-15 top-0 ${globalStates.sideBarOpen ? "left-65  w-[calc(100vw-260px)]" : "left-15  w-[calc(100vw-70px)]"} z-50 flex gap-2.5 items-center border-b border-(--terciary-grey) backdrop-blur shadow-[0_4px_6px_-1px_rgba(51,51,51,0.1)] py-2.5 px-5 text-style__body`}
     >
       <SearchBar
         val={navStates.searchQuery}
@@ -68,7 +98,7 @@ export default function NavView() {
         </div>
 
         {navStates.openNotifications && (
-          <div className="absolute min-w-50 feature-container-vertical right-0">
+          <div className="absolute right-0 z-50 min-w-50 feature-container-vertical">
             <div className="w-full h-full text-center">You are up to date</div>
           </div>
         )}
@@ -83,7 +113,7 @@ export default function NavView() {
       >
         <div>
           <div className="font-bold">{user?.name}</div>
-          <div className="">{user?.role}</div>
+          <div className="">{primaryRoleLabel}</div>
         </div>
 
         <div className="p-2 border w-10 h-10 horizontal-layout justify-center rounded-full bg-(--primary-blue) text-white">
@@ -93,7 +123,7 @@ export default function NavView() {
         {/* DROPDOWN PROFILE OPTIONS */}
         {navStates.profileOptions && (
           <ul
-            className="absolute w-30 p-2.5 flex flex-col gap-0.5 bg-white border border-(--terciary-grey) rounded-[10px] top-12.5 duration-300"
+            className="absolute top-12.5 z-50 w-30 p-2.5 flex flex-col gap-0.5 bg-white border border-(--terciary-grey) rounded-[10px] duration-300"
             onMouseLeave={() => navStates.setProfileOptions(false)}
           >
             <ProfileOption

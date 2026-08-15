@@ -6,26 +6,60 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Button from "@/global-components/ui/Button";
 
 import useEmployees from "../../hooks/useEmployees";
+import { activateEmployee, suspendEmployee } from "../../services/employee";
 
 import { STATUS_STYLES } from "../../constants/STATUS_STYLES";
 import { navMenu } from "../../constants/EMPLOYEE_NAV_MENU";
 
 import { formatLabel } from "../../utils/formatLabel";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
+import type { EmployeeStatus } from "../../types/employeesTypes";
+import { execute } from "@/lib";
 
-const accountActionReg = {
-  Pending: { action: "Activate", icon: "check" },
-  Suspended: { action: "Activate", icon: "unlock" },
-  Active: { action: "Suspend", icon: "ban" },
+const getHeaderAction = (status: EmployeeStatus) => {
+  if (status === "pending") return { action: "Activate", icon: "check" };
+  if (status === "suspended") return { action: "Activate", icon: "unlock" };
+  if (status === "active") return { action: "Suspend", icon: "ban" };
+
+  return null;
 };
 
 export default function Header() {
-  const { states } = useEmployees();
-  const accountStatus: "Pending" | "Active" | "Suspended" = "Active"; // TODO: create function to get user status
+  const { state } = useEmployees();
 
-  const employee = states.employees.find(
-    ({ id }) => id === states.selectedEmployee,
-  );
+  const employee = state.employees.find(
+    ({ id }) => id === state.selectedEmployee?.id,
+  ) ?? state.selectedEmployee;
+  const status: EmployeeStatus = employee?.status ?? "unset";
+  const headerAction = getHeaderAction(status);
+  const department =
+    employee?.employment?.departmentId ?? employee?.profile?.department ?? "No department";
+  const title =
+    employee?.employment?.jobTitle ?? employee?.profile?.jobTitle ?? "No job title";
+
+  const updateEmployeeStatus = () => {
+    if (!employee || !headerAction) return;
+
+    const action =
+      headerAction.action === "Activate"
+        ? () => activateEmployee(employee.id, "Activated from Identity app header.")
+        : () => suspendEmployee(employee.id, "Suspended from Identity app header.");
+
+    execute(action, {
+      setLoading: state.setFetchingEmployeeData,
+      setError: state.setFetchingEmployeeDataError,
+      onSuccess: (updatedEmployee) => {
+        state.setSelectedEmployee(updatedEmployee);
+        state.setEmployees((employees) =>
+          employees.map((listedEmployee) =>
+            listedEmployee.id === updatedEmployee.id
+              ? updatedEmployee
+              : listedEmployee,
+          ),
+        );
+      },
+    });
+  };
 
   return (
     employee && (
@@ -34,6 +68,7 @@ export default function Header() {
           <FontAwesomeIcon
             icon={["fas", "angle-left"]}
             className="buttonize p-2 hover:bg-(--terciary-grey)/50 cursor-pointer rounded-[10px]"
+            onClick={() => state.setSelectedEmployee(null)}
           />
 
           <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-(--primary-blue) text-style__small-text--bold text-white">
@@ -45,40 +80,44 @@ export default function Header() {
               <div className="text-style__big-text">{employee.name}</div>
 
               <span
-                className={`inline-flex rounded-[10px] border px-2 text-style__small-text ${STATUS_STYLES[employee.status]}`}
+                className={`inline-flex rounded-[10px] border px-2 text-style__small-text ${STATUS_STYLES[status]}`}
               >
-                {formatLabel(employee.status)}
+                {formatLabel(status)}
               </span>
 
               <span
-                className={`inline-flex rounded-[10px] border px-2 text-style__small-text ${STATUS_STYLES[employee.status]}`}
+                className={`inline-flex rounded-[10px] border px-2 text-style__small-text ${STATUS_STYLES[status]}`}
               >
-                Keycloak: enabeled
+                Keycloak: {employee.keycloakUserId ? "enabled" : "not linked"}
               </span>
             </div>
 
             <div className="text-style__small-text text-(--primary-grey)">
-              {employee.email} | Engineering Manager | Engineering
+              {employee.email} | {title} | {formatLabel(department)}
             </div>
           </div>
 
-          <Button
-            buttonType={accountStatus === "Active" ? "light" : "primary"}
-            buttonText={accountActionReg[accountStatus].action}
-            icon={
-              <FontAwesomeIcon
-                icon={["fas", accountActionReg[accountStatus].icon as IconName]}
-              />
-            }
-          />
+          {headerAction ? (
+            <Button
+              buttonType={status === "active" ? "light" : "primary"}
+              buttonText={headerAction.action}
+              disabled={state.fetchingEmployeeData}
+              clickAction={updateEmployeeStatus}
+              icon={
+                <FontAwesomeIcon
+                  icon={["fas", headerAction.icon as IconName]}
+                />
+              }
+            />
+          ) : null}
         </div>
 
         <ul className="flex items-center text-style__small-text">
           {navMenu.map((menu) => (
             <li
               key={menu}
-              className={`px-2.5 h-6 cursor-pointer ${states.currentMenu === menu && "border-b-2 border-(--primary-blue) text-(--primary-blue) font-bold"}`}
-              onClick={() => states.setCurrentMenu(menu)}
+              className={`px-2.5 h-6 cursor-pointer ${state.currentMenu === menu && "border-b-2 border-(--primary-blue) text-(--primary-blue) font-bold"}`}
+              onClick={() => state.setCurrentMenu(menu)}
             >
               {menu}
             </li>

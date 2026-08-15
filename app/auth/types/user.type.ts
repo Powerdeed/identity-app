@@ -1,4 +1,5 @@
 export type UserRole = "viewer" | "sales" | "editor" | "admin";
+export type UserStatus = "pending" | "active" | "suspended" | "archived";
 
 export type AppId =
   | "command_center"
@@ -99,10 +100,13 @@ export interface UserTest {
 }
 
 export interface User {
-  _id: string;
+  id: string;
+  _id?: string;
+  username?: string | null;
   name: string;
   email: string;
   role: UserRole;
+  status?: UserStatus;
   roles?: UserRole[];
   keycloakUserId?: string;
   keycloakRoles?: string[];
@@ -208,8 +212,13 @@ export type UserUpdatePayload = Partial<
 export type ModifyUserPayload = UserUpdatePayload;
 
 export interface UserSession {
-  _id: string;
-  user: string;
+  id?: string;
+  _id?: string;
+  user?: string;
+  userId?: string;
+  keycloakUserId?: string;
+  keycloakRoles?: string[];
+  keycloakGroups?: string[];
   userAgent?: string;
   ip?: string;
   isRevoked: boolean;

@@ -4,7 +4,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleLeft, faAngleRight } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useRef, useState } from "react";
 
-const MAX_PAGE_SIZE = 5;
+const MIN_USEFUL_PAGE_SIZE = 5;
+const PAGE_SIZE_OPTIONS = [5, 10, 20, 35, 50, 100] as const;
 
 export interface PaginationProps {
   totalItems: number;
@@ -26,11 +27,22 @@ export default function Pagination({
   const [displayDropDown, setDisplayDropDown] = useState(false);
   const pageSizeSelectorRef = useRef<HTMLDivElement>(null);
   const safeTotalItems = Math.max(0, totalItems);
-  const availablePageSizes = Array.from(
-    { length: Math.min(safeTotalItems, MAX_PAGE_SIZE) },
-    (_, index) => index + 1,
+  const smallestUsefulPageSize = Math.min(
+    safeTotalItems || MIN_USEFUL_PAGE_SIZE,
+    MIN_USEFUL_PAGE_SIZE,
   );
-  const safePageSize = Math.min(Math.max(1, pageSize), MAX_PAGE_SIZE);
+  const availablePageSizes = [
+    ...new Set([
+      smallestUsefulPageSize,
+      ...PAGE_SIZE_OPTIONS.filter((size) => size < safeTotalItems),
+      safeTotalItems,
+    ]),
+  ].filter((size) => size > 0);
+  const largestAvailablePageSize =
+    availablePageSizes[availablePageSizes.length - 1] ?? MIN_USEFUL_PAGE_SIZE;
+  const safePageSize = safeTotalItems
+    ? Math.min(Math.max(smallestUsefulPageSize, pageSize), largestAvailablePageSize)
+    : 0;
   const totalPages = Math.ceil(safeTotalItems / safePageSize);
   const safeCurrentPage = totalPages
     ? Math.min(Math.max(1, currentPage), totalPages)
@@ -61,6 +73,7 @@ export default function Pagination({
     onPageChange(1);
     setDisplayDropDown(false);
   };
+  const canChangePageSize = availablePageSizes.length > 1;
 
   return (
     <nav
@@ -75,9 +88,12 @@ export default function Pagination({
             aria-label="Items per page"
             aria-haspopup="listbox"
             aria-expanded={displayDropDown}
-            disabled={!safeTotalItems}
+            disabled={!safeTotalItems || !canChangePageSize}
             className="containerize buttonize disabled:cursor-not-allowed disabled:opacity-60"
-            onClick={() => setDisplayDropDown((isOpen) => !isOpen)}
+            onClick={() => {
+              if (!canChangePageSize) return;
+              setDisplayDropDown((isOpen) => !isOpen);
+            }}
             onKeyDown={(event) => {
               if (event.key === "Escape") setDisplayDropDown(false);
             }}

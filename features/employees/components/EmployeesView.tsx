@@ -6,12 +6,13 @@ import DisplayEmployees from "./has-no-selected-employee/DisplayEmployees";
 import useEmployees from "../hooks/useEmployees";
 
 export default function EmployeesView() {
-  const { states } = useEmployees();
+  const { state } = useEmployees();
+
   return (
     <div>
-      {!states.selectedEmployee && <DisplayEmployees />}
+      {!state.selectedEmployee && <DisplayEmployees />}
 
-      {states.selectedEmployee && <SelectedEmployeeDetails />}
+      {state.selectedEmployee && <SelectedEmployeeDetails />}
     </div>
   );
 }

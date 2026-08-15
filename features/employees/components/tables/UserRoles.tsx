@@ -3,6 +3,7 @@
 import { faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+import type { RoleAssignment } from "@/app/auth";
 import Button from "@/global-components/ui/Button";
 import DataTable, {
   type DataTableColumn,
@@ -12,26 +13,22 @@ import { getDateFormatted } from "@/globals";
 interface PowerdeedRoleRow {
   id: string;
   role: string;
+  roleIndex: number;
   scope: string;
   assignedAt: string;
   expiresAt?: string | null;
 }
 
-// TODO: Create a function to get this data
-const roles: PowerdeedRoleRow[] = [
-  {
-    id: "finance-analyst-global",
-    role: "finance:analyst",
-    scope: "global",
-    assignedAt: "2024-01-15",
-    expiresAt: null,
-  },
-];
-
 const formatDate = (value?: string | null) =>
   value ? getDateFormatted(value) || "-" : "-";
 
-const roleColumns: DataTableColumn<PowerdeedRoleRow>[] = [
+const createRoleColumns = ({
+  onRemoveRole,
+  isSaving,
+}: {
+  onRemoveRole?: (roleIndex: number) => void;
+  isSaving?: boolean;
+}): DataTableColumn<PowerdeedRoleRow>[] => [
   {
     id: "role",
     header: "Role",
@@ -69,7 +66,9 @@ const roleColumns: DataTableColumn<PowerdeedRoleRow>[] = [
         type="button"
         title={`Remove ${role.role}`}
         aria-label={`Remove ${role.role}`}
+        disabled={isSaving || !onRemoveRole}
         className="grid h-8 w-8 place-items-center rounded-[10px] text-(--primary-grey) duration-150 hover:bg-(--primary-red)/10 hover:text-(--primary-red)"
+        onClick={() => onRemoveRole?.(role.roleIndex)}
       >
         <FontAwesomeIcon icon={faXmark} />
       </button>
@@ -77,19 +76,41 @@ const roleColumns: DataTableColumn<PowerdeedRoleRow>[] = [
   },
 ];
 
-export default function Roles() {
+export default function Roles({
+  roles,
+  onAssignRole,
+  onRemoveRole,
+  isSaving,
+}: {
+  roles: RoleAssignment[];
+  onAssignRole?: () => void;
+  onRemoveRole?: (roleIndex: number) => void;
+  isSaving?: boolean;
+}) {
+  const roleRows: PowerdeedRoleRow[] = roles.map((role, index) => ({
+    id: `${role.roleId}-${role.scopeType}-${role.scopeId ?? "all"}-${index}`,
+    role: role.roleId,
+    roleIndex: index,
+    scope: role.scopeId ? `${role.scopeType}: ${role.scopeId}` : role.scopeType,
+    assignedAt: role.assignedAt ?? "",
+    expiresAt: role.expiresAt ?? null,
+  }));
+  const roleColumns = createRoleColumns({ onRemoveRole, isSaving });
+
   return (
     <DataTable
       title="Powerdeed Roles"
-      description={`${roles.length} assigned ${roles.length === 1 ? "role" : "roles"}`}
+      description={`${roleRows.length} assigned ${roleRows.length === 1 ? "role" : "roles"}`}
       headerAside={
         <Button
           buttonText="Assign Role"
           icon={<FontAwesomeIcon icon={faPlus} />}
+          clickAction={onAssignRole}
+          disabled={isSaving}
         />
       }
       columns={roleColumns}
-      data={roles}
+      data={roleRows}
       getRowId={(role) => role.id}
       minWidthClassName="min-w-180"
       emptyState={

@@ -1,6 +1,3 @@
-import { getAuthRedirect } from "@app/auth";
-import axios from "axios";
-
 // const getApiBaseUrl = () => {
 //   const baseUrl = process.env.NEXT_PUBLIC_CMS_API_BASE_URL?.trim();
 

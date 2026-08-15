@@ -13,33 +13,8 @@ interface UserPermissionRow {
   source: string;
 }
 
-// TODO: Create a function to get this data
-const userPermissions: UserPermissionRow[] = [
-  {
-    id: "identity-read-staff-profiles",
-    permission: "read:staff-profiles",
-    domain: "Identity",
-    source: "role: platform:engineer",
-  },
-  {
-    id: "platform-write-deployments",
-    permission: "write:deployments",
-    domain: "Platform",
-    source: "role: ops:deployer",
-  },
-  {
-    id: "security-ops-deployer-role",
-    permission: "role: ops:deployer",
-    domain: "Security",
-    source: "group: eng-staff",
-  },
-  {
-    id: "network-vpn-connect",
-    permission: "vpn:connect",
-    domain: "Network",
-    source: "group: vpn-access",
-  },
-];
+const getPermissionDomain = (permission: string) =>
+  permission.split(/[.:]/)[0] || "general";
 
 const permissionColumns: DataTableColumn<UserPermissionRow>[] = [
   {
@@ -65,8 +40,22 @@ const permissionColumns: DataTableColumn<UserPermissionRow>[] = [
   },
 ];
 
-export default function UserPermissions() {
+export default function UserPermissions({
+  permissions,
+}: {
+  permissions: string[];
+}) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const userPermissions: UserPermissionRow[] = permissions.map(
+    (permission, index) => ({
+      id: `${permission}-${index}`,
+      permission,
+      domain: getPermissionDomain(permission),
+      source: "effective access",
+    }),
+  );
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
   const filteredPermissions = normalizedQuery
     ? userPermissions.filter((permission) =>
@@ -75,6 +64,12 @@ export default function UserPermissions() {
         ),
       )
     : userPermissions;
+  const totalPages = Math.ceil(filteredPermissions.length / pageSize) || 1;
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const visiblePermissions = filteredPermissions.slice(
+    (safeCurrentPage - 1) * pageSize,
+    safeCurrentPage * pageSize,
+  );
 
   return (
     <DataTable
@@ -86,13 +81,24 @@ export default function UserPermissions() {
       }
       search={{
         value: searchQuery,
-        onChange: setSearchQuery,
+        onChange: (value) => {
+          setSearchQuery(value);
+          setCurrentPage(1);
+        },
         placeholder: "Search permissions",
       }}
       columns={permissionColumns}
-      data={filteredPermissions}
+      data={visiblePermissions}
       getRowId={(permission) => permission.id}
       minWidthClassName="min-w-140"
+      pagination={{
+        totalItems: filteredPermissions.length,
+        currentPage,
+        pageSize,
+        onPageChange: setCurrentPage,
+        onPageSizeChange: setPageSize,
+        dataType: "permissions",
+      }}
       emptyState={
         <div className="grid min-h-40 place-items-center px-5 py-10 text-center">
           <div>

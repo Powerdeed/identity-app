@@ -4,6 +4,7 @@ import { getDateTimeFormatted } from "@/globals";
 import DataTable, {
   type DataTableColumn,
 } from "@/global-components/ui/DataTable";
+import { useEffect, useState } from "react";
 
 export type UserActivityCategory =
   | "Lifecycle"
@@ -77,6 +78,20 @@ export default function UserActivities({
   activities: UserActivityRow[];
   representative?: boolean;
 }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const visibleActivities = activities.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+  const totalPages = Math.ceil(activities.length / pageSize);
+
+  useEffect(() => {
+    if (totalPages && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
   return (
     <DataTable
       title="Activity history"
@@ -90,9 +105,17 @@ export default function UserActivities({
         ) : null
       }
       columns={activityColumns}
-      data={activities}
+      data={visibleActivities}
       getRowId={(activity) => activity.id}
       minWidthClassName="min-w-240"
+      pagination={{
+        totalItems: activities.length,
+        currentPage,
+        pageSize,
+        onPageChange: setCurrentPage,
+        onPageSizeChange: setPageSize,
+        dataType: "events",
+      }}
       emptyState={
         <div className="grid min-h-40 place-items-center px-5 py-10 text-center">
           <div>

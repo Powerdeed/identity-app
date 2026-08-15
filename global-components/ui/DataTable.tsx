@@ -66,8 +66,8 @@ export default function DataTable<T>({
   search,
 }: DataTableProps<T>) {
   return (
-    <section className="min-w-0 max-w-full overflow-hidden rounded-[10px] border border-(--terciary-grey) bg-white">
-      <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-(--terciary-grey) px-4 py-3">
+    <section className="min-w-0 max-w-full rounded-[10px] border border-(--terciary-grey) bg-white">
+      <div className="relative z-20 flex flex-wrap items-center justify-between gap-2.5 border-b border-(--terciary-grey) px-4 py-3">
         <div>
           <h2 className="text-style__big-text text-(--primary-blue)">
             {title}

@@ -1,6 +1,5 @@
 "use client";
 
-import { faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import Button from "@/global-components/ui/Button";
@@ -15,35 +14,16 @@ interface PermissionExceptionRow {
   source: string;
 }
 
-// TODO: Create a function to get this data
-const permissionExceptions: PermissionExceptionRow[] = [
-  {
-    id: "identity-read-staff-profiles",
-    permission: "read:staff-profiles",
-    domain: "Identity",
-    source: "role: platform:engineer",
-  },
-  {
-    id: "platform-write-deployments",
-    permission: "write:deployments",
-    domain: "Platform",
-    source: "role: ops:deployer",
-  },
-  {
-    id: "security-ops-deployer-role",
-    permission: "role: ops:deployer",
-    domain: "Security",
-    source: "group: eng-staff",
-  },
-  {
-    id: "network-vpn-connect",
-    permission: "vpn:connect",
-    domain: "Network",
-    source: "group: vpn-access",
-  },
-];
+const getPermissionDomain = (permission: string) =>
+  permission.split(/[.:]/)[0] || "general";
 
-const exceptionColumns: DataTableColumn<PermissionExceptionRow>[] = [
+const createExceptionColumns = ({
+  onRemovePermission,
+  isSaving,
+}: {
+  onRemovePermission?: (permission: string) => void;
+  isSaving?: boolean;
+}): DataTableColumn<PermissionExceptionRow>[] => [
   {
     id: "permission",
     header: "Permission",
@@ -75,15 +55,40 @@ const exceptionColumns: DataTableColumn<PermissionExceptionRow>[] = [
         type="button"
         title={`Remove ${exception.permission} exception`}
         aria-label={`Remove ${exception.permission} exception`}
+        disabled={isSaving || !onRemovePermission}
         className="grid h-8 w-8 place-items-center rounded-[10px] text-(--primary-grey) duration-150 hover:bg-(--primary-red)/10 hover:text-(--primary-red)"
+        onClick={() => onRemovePermission?.(exception.permission)}
       >
-        <FontAwesomeIcon icon={faXmark} />
+        <FontAwesomeIcon icon={["fas", "xmark"]} />
       </button>
     ),
   },
 ];
 
-export default function UserPermissionExceptions() {
+export default function UserPermissionExceptions({
+  permissions,
+  onAddPermission,
+  onRemovePermission,
+  isSaving,
+}: {
+  permissions: string[];
+  onAddPermission?: () => void;
+  onRemovePermission?: (permission: string) => void;
+  isSaving?: boolean;
+}) {
+  const permissionExceptions: PermissionExceptionRow[] = permissions.map(
+    (permission, index) => ({
+      id: `${permission}-${index}`,
+      permission,
+      domain: getPermissionDomain(permission),
+      source: "direct override",
+    }),
+  );
+  const exceptionColumns = createExceptionColumns({
+    onRemovePermission,
+    isSaving,
+  });
+
   return (
     <DataTable
       title="Direct Permission Exceptions"
@@ -91,7 +96,9 @@ export default function UserPermissionExceptions() {
       headerAside={
         <Button
           buttonText="Add Exception"
-          icon={<FontAwesomeIcon icon={faPlus} />}
+          icon={<FontAwesomeIcon icon={["fas", "plus"]} />}
+          clickAction={onAddPermission}
+          disabled={isSaving}
         />
       }
       columns={exceptionColumns}

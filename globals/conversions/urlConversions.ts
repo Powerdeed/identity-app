@@ -12,6 +12,12 @@ export const convertLabelToLink = (label: string) => {
 };
 
 export const convertLinkToLabel = (link: string) => {
+  const exceptionLinks: Record<string, string> = {
+    "joiners-movers-leavers": "Joiners/Movers/Leavers",
+  };
+
+  if (exceptionLinks[link]) return exceptionLinks[link];
+
   if (link.includes("&")) {
     // link separated with "&" e.g. "leads&inquiries" => "Leads & Inquiries"
     return link

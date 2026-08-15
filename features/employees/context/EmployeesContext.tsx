@@ -1,16 +1,19 @@
 "use client";
 
 import { Dispatch, SetStateAction, createContext } from "react";
-import { EmployeeTableRow } from "../types/employeesTypes";
+import { User } from "@/app/auth";
 
 type EmployeesContextValue = {
-  employees: EmployeeTableRow[];
+  employees: User[];
+  setEmployees: Dispatch<SetStateAction<User[]>>;
   currentPage: number;
   setCurrentPage: Dispatch<SetStateAction<number>>;
   pageSize: number;
   setPageSize: Dispatch<SetStateAction<number>>;
-  selectedEmployee: string | null;
-  setSelectedEmployee: Dispatch<SetStateAction<string | null>>;
+  fetchingEmployees: boolean;
+  setFetchingEmployees: Dispatch<SetStateAction<boolean>>;
+  fetchingEmployeesError: string;
+  setFetchingEmployeesError: Dispatch<SetStateAction<string>>;
 };
 
 export const employeesContext = createContext<EmployeesContextValue | null>(
