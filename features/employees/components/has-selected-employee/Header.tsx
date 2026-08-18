@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Button from "@/global-components/ui/Button";
 
 import useEmployees from "../../hooks/useEmployees";
-import { activateEmployee, suspendEmployee } from "../../services/employee";
+import useEmployeeStatusActions from "../../hooks/useEmployeeStatusActions";
 
 import { STATUS_STYLES } from "../../constants/STATUS_STYLES";
 import { navMenu } from "../../constants/EMPLOYEE_NAV_MENU";
@@ -14,7 +14,6 @@ import { navMenu } from "../../constants/EMPLOYEE_NAV_MENU";
 import { formatLabel } from "../../utils/formatLabel";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import type { EmployeeStatus } from "../../types/employeesTypes";
-import { execute } from "@/lib";
 
 const getHeaderAction = (status: EmployeeStatus) => {
   if (status === "pending") return { action: "Activate", icon: "check" };
@@ -26,6 +25,7 @@ const getHeaderAction = (status: EmployeeStatus) => {
 
 export default function Header() {
   const { state } = useEmployees();
+  const { changeStatus } = useEmployeeStatusActions();
 
   const employee = state.employees.find(
     ({ id }) => id === state.selectedEmployee?.id,
@@ -40,25 +40,11 @@ export default function Header() {
   const updateEmployeeStatus = () => {
     if (!employee || !headerAction) return;
 
-    const action =
-      headerAction.action === "Activate"
-        ? () => activateEmployee(employee.id, "Activated from Identity app header.")
-        : () => suspendEmployee(employee.id, "Suspended from Identity app header.");
-
-    execute(action, {
-      setLoading: state.setFetchingEmployeeData,
-      setError: state.setFetchingEmployeeDataError,
-      onSuccess: (updatedEmployee) => {
-        state.setSelectedEmployee(updatedEmployee);
-        state.setEmployees((employees) =>
-          employees.map((listedEmployee) =>
-            listedEmployee.id === updatedEmployee.id
-              ? updatedEmployee
-              : listedEmployee,
-          ),
-        );
-      },
-    });
+    const action = headerAction.action === "Activate" ? "activate" : "suspend";
+    changeStatus(
+      action,
+      `${action === "activate" ? "Activated" : "Suspended"} from Identity app header.`,
+    );
   };
 
   return (

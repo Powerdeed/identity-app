@@ -1,34 +1,16 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useState } from "react";
 import { employeesContext } from "./EmployeesContext";
 import { employeeContext } from "./EmployeeContext";
 import type { EmployeeMenu } from "../constants/EMPLOYEE_NAV_MENU";
 import {
-  DepartmentId,
-  EmploymentType,
-  SeniorityLevel,
   User,
   UserSession,
   UserPermission,
 } from "@/app/auth";
-import { execute } from "@/lib";
-import { getEmployees } from "../services/employees";
 import { AuditEvent } from "../types/audit.types";
-
-export type EmploymentDetails = {
-  "EMPLOYEE NUMBER": string;
-  DEPARTMENT: DepartmentId;
-  TEAM: string;
-  "JOB TITLE": string;
-  "POSITION CODE": string;
-  SENIORITY: SeniorityLevel;
-  "EMPLOYEE TYPE": EmploymentType;
-  "WORK LOCATION": string;
-  "START DATE": string;
-  "END DATE": string;
-  MANAGER: string;
-};
+import type { EmploymentDetails } from "../types/employeesTypes";
 
 export default function EmployeesProvider({
   children,
@@ -52,16 +34,6 @@ export default function EmployeesProvider({
   const [employeeLastActivity, setEmployeeLastActivity] =
     useState<AuditEvent | null>(null);
 
-  useEffect(() => {
-    const fetchEmployees = () =>
-      execute(getEmployees, {
-        setLoading: setFetchingEmployees,
-        setError: setFetchingEmployeesError,
-        onSuccess: (employees) => setEmployees(employees),
-      });
-
-    fetchEmployees();
-  }, []);
   const [employmentDetails, setEmploymentDetails] =
     useState<EmploymentDetails | null>(null);
   const [isEmployeeDetailsOpen, setIsEmployeeDetailsOpen] = useState(false);

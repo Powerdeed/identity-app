@@ -1,88 +1,20 @@
 "use client";
 
 import useEmployees from "../../hooks/useEmployees";
+import useEmploymentEditor from "../../hooks/useEmploymentEditor";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { EmploymentDetails } from "../../context/EmployeesProvider";
+import type { EmploymentDetails } from "../../types/employeesTypes";
 import Button from "@/global-components/ui/Button";
-import { updateEmployeeEmployment } from "../../services/employee";
-import { execute } from "@/lib";
-import type { EmploymentProfile } from "@/app/auth";
 import { DateRangePicker } from "@/global-components/layout/date";
-
-const dateFields: Array<keyof EmploymentDetails> = ["START DATE", "END DATE"];
-
-const parseDateInput = (value?: string) => {
-  if (!value) return null;
-
-  const [year, month, day] = value.split("-").map(Number);
-  if (!year || !month || !day) return null;
-
-  return new Date(year, month - 1, day);
-};
-
-const formatDateInput = (date: Date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-};
+import {
+  employmentDateFields,
+  parseDateInput,
+} from "../../utils/employment";
 
 export default function EmploymentEditor() {
   const { state } = useEmployees();
+  const editor = useEmploymentEditor();
   const employee = state.selectedEmployee;
-
-  const modifyEmployeeDetails = (
-    key: keyof EmploymentDetails,
-    value: EmploymentDetails[keyof EmploymentDetails],
-  ) => {
-    state.setEmploymentDetails((prev) => {
-      if (!prev) return null;
-      return { ...prev, [key]: value };
-    });
-  };
-
-  const closeEditor = () => state.setIsEmployeeDetailsOpen(false);
-
-  const toEmploymentProfile = (
-    details: EmploymentDetails,
-  ): EmploymentProfile => ({
-    employeeNumber: details["EMPLOYEE NUMBER"] || undefined,
-    departmentId: details.DEPARTMENT || undefined,
-    teamIds: details.TEAM
-      ? details.TEAM.split(",")
-          .map((team) => team.trim())
-          .filter(Boolean)
-      : undefined,
-    managerId: details.MANAGER || undefined,
-    jobTitle: details["JOB TITLE"] || undefined,
-    positionCode: details["POSITION CODE"] || undefined,
-    seniorityLevel: details.SENIORITY || undefined,
-    employmentType: details["EMPLOYEE TYPE"] || undefined,
-    workLocation: details["WORK LOCATION"] || undefined,
-    startDate: details["START DATE"] || undefined,
-    endDate: details["END DATE"] || undefined,
-  });
-
-  const saveEmploymentDetails = () => {
-    if (!employee || !state.employmentDetails) return;
-
-    execute(
-      () =>
-        updateEmployeeEmployment(
-          employee.id,
-          toEmploymentProfile(state.employmentDetails as EmploymentDetails),
-        ),
-      {
-        setLoading: state.setFetchingEmployeeData,
-        setError: state.setFetchingEmployeeDataError,
-        onSuccess: (updatedEmployee) => {
-          state.setSelectedEmployee(updatedEmployee);
-          closeEditor();
-        },
-      },
-    );
-  };
 
   return (
     <div
@@ -96,7 +28,7 @@ export default function EmploymentEditor() {
         <FontAwesomeIcon
           icon={["fas", "xmark"]}
           className="buttonize p-2.5 hover:text-(--primary-blue) rounded-[10px] hover:rotate-90"
-          onClick={closeEditor}
+          onClick={editor.close}
         />
       </div>
 
@@ -110,7 +42,7 @@ export default function EmploymentEditor() {
         {state.employmentDetails &&
           Object.entries(state.employmentDetails).map(
             ([employmentField, employeeFieldValue]) =>
-              dateFields.includes(employmentField as keyof EmploymentDetails) ? null : (
+              employmentDateFields.includes(employmentField as keyof EmploymentDetails) ? null : (
               <div key={employmentField} className="w-full">
                 <div>{employmentField}</div>
 
@@ -120,7 +52,7 @@ export default function EmploymentEditor() {
                   value={employeeFieldValue ?? ""}
                   disabled={state.fetchingEmployeeData}
                   onChange={(e) =>
-                    modifyEmployeeDetails(
+                    editor.updateField(
                       employmentField as keyof EmploymentDetails,
                       e.target
                         .value as EmploymentDetails[keyof EmploymentDetails],
@@ -138,17 +70,9 @@ export default function EmploymentEditor() {
           <DateRangePicker
             startDate={parseDateInput(state.employmentDetails["START DATE"])}
             endDate={parseDateInput(state.employmentDetails["END DATE"])}
-            onChange={({ startDate, endDate }) => {
-              state.setEmploymentDetails((prev) => {
-                if (!prev) return null;
-
-                return {
-                  ...prev,
-                  "START DATE": formatDateInput(startDate),
-                  "END DATE": formatDateInput(endDate),
-                };
-              });
-            }}
+            onChange={({ startDate, endDate }) =>
+              editor.updatePeriod(startDate, endDate)
+            }
           />
         </div>
       )}
@@ -159,12 +83,12 @@ export default function EmploymentEditor() {
         <Button
           buttonText="Cancel"
           buttonType="light"
-          clickAction={closeEditor}
+          clickAction={editor.close}
           disabled={state.fetchingEmployeeData}
         />
         <Button
           buttonText={state.fetchingEmployeeData ? "Saving..." : "Save"}
-          clickAction={saveEmploymentDetails}
+          clickAction={editor.save}
           disabled={!employee || !state.employmentDetails || state.fetchingEmployeeData}
         />
       </div>

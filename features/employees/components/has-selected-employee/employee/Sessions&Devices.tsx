@@ -4,84 +4,22 @@ import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import useEmployees from "@/features/employees/hooks/useEmployees";
-import {
-  getEmployeeSessions,
-  revokeAllEmployeeSessions,
-  revokeEmployeeSession,
-} from "@/features/employees/services/employee";
+import useEmployeeSessions from "@/features/employees/hooks/useEmployeeSessions";
 import Button from "@/global-components/ui/Button";
 import DataTable, {
   type DataTableColumn,
 } from "@/global-components/ui/DataTable";
 import { getDateTimeFormatted } from "@/globals";
 import Dotindicator from "@/global-components/ui/Dotindicator";
-import { execute } from "@/lib";
-import { useEffect, useState } from "react";
-
-type SessionStatus = "Active" | "Expired" | "Revoked";
-
-interface SessionDeviceRow {
-  id: string;
-  device: string;
-  ipAddress: string;
-  createdAt?: string;
-  expiresAt?: string;
-  status: SessionStatus;
-}
+import type { SessionDeviceRow } from "@/features/employees/utils/sessions";
 
 const formatTimestamp = (value?: string) =>
   getDateTimeFormatted(value) || "Unknown";
 
 export default function SessionsAndDevices() {
   const { state } = useEmployees();
-  const [currentTime, setCurrentTime] = useState<number | null>(null);
+  const sessions = useEmployeeSessions();
   const employee = state.selectedEmployee;
-  const employeeId = employee?.id;
-  const activeSessions = state.employeeSessions;
-  const isMutating = state.fetchingEmployeeData;
-
-  useEffect(() => {
-    setCurrentTime(Date.now());
-  }, []);
-
-  const refreshSessions = async () => {
-    if (!employeeId) return;
-
-    await execute(() => getEmployeeSessions(employeeId), {
-      setLoading: state.setFetchingEmployeeData,
-      setError: state.setFetchingEmployeeDataError,
-      onSuccess: state.setEmployeeSessions,
-    });
-  };
-
-  const revokeSession = (sessionId: string) => {
-    if (!employeeId) return;
-
-    execute(() => revokeEmployeeSession(employeeId, sessionId), {
-      setLoading: state.setFetchingEmployeeData,
-      setError: state.setFetchingEmployeeDataError,
-      onSuccess: refreshSessions,
-    });
-  };
-
-  const sessionsAndDevices: SessionDeviceRow[] = activeSessions.map(
-    (session) => {
-      const expiresAtMs = session.expiresAt
-        ? new Date(session.expiresAt).getTime()
-        : null;
-      const isExpired =
-        currentTime !== null && expiresAtMs !== null && expiresAtMs <= currentTime;
-
-      return {
-        id: session.id ?? session._id ?? "",
-        device: session.userAgent || "Unknown device",
-        ipAddress: session.ip || "Unknown IP",
-        createdAt: session.createdAt,
-        expiresAt: session.expiresAt,
-        status: session.isRevoked ? "Revoked" : isExpired ? "Expired" : "Active",
-      };
-    },
-  );
 
   if (!employee) return null;
 
@@ -144,9 +82,9 @@ export default function SessionsAndDevices() {
           type="button"
           title={`Revoke session on ${session.device}`}
           aria-label={`Revoke session on ${session.device}`}
-          disabled={session.status !== "Active" || isMutating}
+          disabled={session.status !== "Active" || sessions.isMutating}
           className="grid h-8 w-8 place-items-center rounded-[10px] text-(--primary-grey) duration-150 enabled:hover:bg-(--primary-red)/10 enabled:hover:text-(--primary-red) disabled:cursor-not-allowed disabled:opacity-40"
-          onClick={() => revokeSession(session.id)}
+          onClick={() => sessions.revoke(session.id)}
         >
           <FontAwesomeIcon icon={faTrashCan} />
         </button>
@@ -157,29 +95,21 @@ export default function SessionsAndDevices() {
   return (
     <DataTable
       title="Sessions & Devices"
-      description={`${sessionsAndDevices.length} ${sessionsAndDevices.length === 1 ? "session" : "sessions"}`}
+      description={`${sessions.rows.length} ${sessions.rows.length === 1 ? "session" : "sessions"}`}
       headerAside={
         <Button
           buttonText="Revoke All Sessions"
           icon={<FontAwesomeIcon icon={faTrashCan} />}
           buttonType="red"
-          clickAction={() => {
-            if (!employeeId) return;
-
-            execute(() => revokeAllEmployeeSessions(employeeId), {
-              setLoading: state.setFetchingEmployeeData,
-              setError: state.setFetchingEmployeeDataError,
-              onSuccess: refreshSessions,
-            });
-          }}
+          clickAction={sessions.revokeAll}
           disabled={
-            isMutating ||
-            !sessionsAndDevices.some((session) => session.status === "Active")
+            sessions.isMutating ||
+            !sessions.rows.some((session) => session.status === "Active")
           }
         />
       }
       columns={sessionColumns}
-      data={sessionsAndDevices}
+      data={sessions.rows}
       getRowId={(session) => session.id}
       minWidthClassName="min-w-180"
       emptyState={

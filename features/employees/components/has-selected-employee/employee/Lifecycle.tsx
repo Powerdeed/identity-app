@@ -5,16 +5,10 @@ import {
   LifecycleStatus,
 } from "@/features/employees/constants/LIFECYCLE_STATUSES";
 import useEmployees from "@/features/employees/hooks/useEmployees";
-import {
-  activateEmployee,
-  archiveEmployee,
-  suspendEmployee,
-} from "@/features/employees/services/employee";
+import useEmployeeStatusActions from "@/features/employees/hooks/useEmployeeStatusActions";
 import Button from "@/global-components/ui/Button";
 import ContainerTitle from "@/global-components/ui/ContainerTitle";
-import { execute } from "@/lib";
 import { useEffect, useState } from "react";
-import type { User } from "@/app/auth";
 
 const toLifecycleStatus = (status?: string): LifecycleStatus => {
   switch (status) {
@@ -32,6 +26,7 @@ const toLifecycleStatus = (status?: string): LifecycleStatus => {
 
 export default function Lifecycle() {
   const { state } = useEmployees();
+  const { changeStatus } = useEmployeeStatusActions();
   const employee = state.selectedEmployee;
   const employeeStatus = toLifecycleStatus(employee?.status);
   const [currentStatus, setCurrentStatus] = useState<LifecycleStatus | null>(
@@ -46,23 +41,6 @@ export default function Lifecycle() {
   }, [employeeStatus]);
 
   if (!employee) return null;
-
-  const changeStatus = (action: () => Promise<User>) => {
-    execute(action, {
-      setLoading: state.setFetchingEmployeeData,
-      setError: state.setFetchingEmployeeDataError,
-      onSuccess: (updatedEmployee) => {
-        state.setSelectedEmployee(updatedEmployee);
-        state.setEmployees((employees) =>
-          employees.map((listedEmployee) =>
-            listedEmployee.id === updatedEmployee.id
-              ? updatedEmployee
-              : listedEmployee,
-          ),
-        );
-      },
-    });
-  };
 
   return (
     <div className="vertical-layout__outer">
@@ -111,11 +89,8 @@ export default function Lifecycle() {
               }
               clickAction={() =>
                 changeStatus(
-                  () =>
-                    suspendEmployee(
-                      employee.id,
-                      "Suspended from Identity app lifecycle panel.",
-                    ),
+                  "suspend",
+                  "Suspended from Identity app lifecycle panel.",
                 )
               }
             />
@@ -139,11 +114,8 @@ export default function Lifecycle() {
               }
               clickAction={() =>
                 changeStatus(
-                  () =>
-                    archiveEmployee(
-                      employee.id,
-                      "Archived from Identity app lifecycle panel.",
-                    ),
+                  "archive",
+                  "Archived from Identity app lifecycle panel.",
                 )
               }
             />
@@ -164,11 +136,8 @@ export default function Lifecycle() {
               disabled={state.fetchingEmployeeData || employee.status === "active"}
               clickAction={() =>
                 changeStatus(
-                  () =>
-                    activateEmployee(
-                      employee.id,
-                      "Activated from Identity app lifecycle panel.",
-                    ),
+                  "activate",
+                  "Activated from Identity app lifecycle panel.",
                 )
               }
             />

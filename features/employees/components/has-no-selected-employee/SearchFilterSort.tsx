@@ -2,36 +2,14 @@
 
 import SearchBar from "@global-components/ui/SearchBar";
 import Filter from "@global-components/ui/Filter";
-
-export const STATUS_FILTERS = [
-  "All statuses",
-  "Pending",
-  "Active",
-  "Suspended",
-  "Archived",
-] as const;
-
-export const DEPARTMENT_FILTERS = [
-  "All Departments",
-  "Content",
-  "Engineering",
-  "Executive",
-  "Finance",
-  "HR",
-  "Operations",
-] as const;
-
-export const EMPLOYEE_SORT_OPTIONS = [
-  "Default order",
-  "Name A-Z",
-  "Name Z-A",
-  "Recently active",
-  "Least recently active",
-] as const;
-
-export type StatusFilter = (typeof STATUS_FILTERS)[number];
-export type DepartmentFilter = (typeof DEPARTMENT_FILTERS)[number];
-export type EmployeeSortOption = (typeof EMPLOYEE_SORT_OPTIONS)[number];
+import {
+  DEPARTMENT_FILTERS,
+  EMPLOYEE_SORT_OPTIONS,
+  STATUS_FILTERS,
+  type DepartmentFilter,
+  type EmployeeSortOption,
+  type StatusFilter,
+} from "../../constants/EMPLOYEE_DIRECTORY";
 
 interface SearchFilterSortProps {
   searchValue: string;

@@ -1,4 +1,3 @@
-import { Dispatch, SetStateAction } from "react";
 import { ApiError } from "./utils/apiError";
 
 export const execute = async <T>(
@@ -8,7 +7,7 @@ export const execute = async <T>(
     setError,
     onSuccess,
   }: {
-    setLoading: Dispatch<SetStateAction<boolean>>;
+    setLoading: (loading: boolean) => void;
     setError?: (msg: string) => void;
     onSuccess?: (data: T) => void;
   },

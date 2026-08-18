@@ -7,44 +7,22 @@ import ContainerTitle from "@/global-components/ui/ContainerTitle";
 import { getDateFormatted } from "@/globals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import EmploymentEditor from "../EmploymentEditor";
-import { useEffect, useMemo } from "react";
-import { EmploymentDetails } from "@/features/employees/context/EmployeesProvider";
-import { DepartmentId, EmploymentType, SeniorityLevel } from "@/app/auth";
+import { useMemo } from "react";
+import type { EmploymentDetails } from "@/features/employees/types/employeesTypes";
+import { toEmploymentDetails } from "@/features/employees/utils/employment";
 
 export default function Employment() {
   const { state } = useEmployees();
   const employee = state.selectedEmployee;
   const { setEmploymentDetails, setIsEmployeeDetailsOpen } = state;
 
-  const employment = employee?.employment;
   const formatOptionalDate = (value?: string) =>
     value ? getDateFormatted(value) : undefined;
-  const formatDateInput = (value?: string) =>
-    value ? new Date(value).toISOString().slice(0, 10) : "";
 
   const details: EmploymentDetails = useMemo(
-    () => ({
-      "EMPLOYEE NUMBER": employment?.employeeNumber || "",
-      DEPARTMENT: employment?.departmentId || ("" as DepartmentId),
-      TEAM: employment?.teamIds?.join(", ") || "",
-      "JOB TITLE": (employment?.jobTitle ?? employee?.profile?.jobTitle) || "",
-      "POSITION CODE": employment?.positionCode || "",
-      SENIORITY: employment?.seniorityLevel || ("" as SeniorityLevel),
-      "EMPLOYEE TYPE": employment?.employmentType || ("" as EmploymentType),
-      "WORK LOCATION":
-        (employment?.workLocation ?? employee?.profile?.location) || "",
-      "START DATE": formatDateInput(employment?.startDate),
-      "END DATE": formatDateInput(employment?.endDate),
-      MANAGER: employment?.managerId || "",
-    }),
-    [employment, employee?.profile],
+    () => (employee ? toEmploymentDetails(employee) : ({} as EmploymentDetails)),
+    [employee],
   );
-
-  useEffect(() => {
-    const getEmployeeDetails = () => setEmploymentDetails(details);
-
-    getEmployeeDetails();
-  }, [details, setEmploymentDetails]);
 
   if (!employee) return null;
 
@@ -56,7 +34,10 @@ export default function Employment() {
           <Button
             buttonText="Edit"
             buttonType="light"
-            clickAction={() => setIsEmployeeDetailsOpen(true)}
+            clickAction={() => {
+              setEmploymentDetails(details);
+              setIsEmployeeDetailsOpen(true);
+            }}
             icon={<FontAwesomeIcon icon={["far", "pen-to-square"]} />}
           />
         }

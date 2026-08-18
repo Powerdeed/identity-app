@@ -13,12 +13,18 @@ export * from "./conversions/urlConversions";
 
 // helpers
 export * from "../global-components/layout/date/utils/currentDate";
+export * from "./helper functions/getRandomColor";
 export * from "./helper functions/handleEmailFormat";
+export * from "./helper functions/toCamelCase";
 export * from "./helper functions/truncateTxt";
+
+// constants
+export * from "./constants/unsavedChangesNotice";
 
 // hooks
 export { default as useGlobals } from "./hooks/useGlobals";
 export * from "./hooks/useGlobals";
+export { default as useGlobalStates } from "./hooks/useGlobalStates";
 export { default as useUnsavedChangesGuard } from "./hooks/useUnsavedChangesGuard";
 export * from "./hooks/useUnsavedChangesGuard";
 export { default as useClipboard } from "./hooks/useClipboard";

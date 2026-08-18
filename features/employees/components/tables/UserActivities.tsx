@@ -4,7 +4,7 @@ import { getDateTimeFormatted } from "@/globals";
 import DataTable, {
   type DataTableColumn,
 } from "@/global-components/ui/DataTable";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export type UserActivityCategory =
   | "Lifecycle"
@@ -80,17 +80,12 @@ export default function UserActivities({
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const visibleActivities = activities.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
-  );
   const totalPages = Math.ceil(activities.length / pageSize);
-
-  useEffect(() => {
-    if (totalPages && currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
+  const visiblePage = Math.min(currentPage, Math.max(totalPages, 1));
+  const visibleActivities = activities.slice(
+    (visiblePage - 1) * pageSize,
+    visiblePage * pageSize,
+  );
 
   return (
     <DataTable
@@ -110,7 +105,7 @@ export default function UserActivities({
       minWidthClassName="min-w-240"
       pagination={{
         totalItems: activities.length,
-        currentPage,
+        currentPage: visiblePage,
         pageSize,
         onPageChange: setCurrentPage,
         onPageSizeChange: setPageSize,

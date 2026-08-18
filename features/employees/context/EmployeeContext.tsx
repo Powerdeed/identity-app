@@ -4,7 +4,7 @@ import { Dispatch, SetStateAction, createContext } from "react";
 import type { EmployeeMenu } from "../constants/EMPLOYEE_NAV_MENU";
 import { User, UserPermission, UserSession } from "@/app/auth";
 import { AuditEvent } from "../types/audit.types";
-import { EmploymentDetails } from "./EmployeesProvider";
+import type { EmploymentDetails } from "../types/employeesTypes";
 
 export type EmployeeContextValue = {
   currentMenu: EmployeeMenu;

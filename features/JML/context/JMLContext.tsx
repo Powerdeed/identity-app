@@ -1,21 +1,11 @@
 "use client";
 
-import { createContext, Dispatch, SetStateAction } from "react";
-import { subSections } from "../components/JMLView";
+import { createContext, Dispatch } from "react";
+import type { JMLAction, JMLState } from "../state/jml.reducer";
 
-export type CurrentStage =
-  | "Search Keycloak"
-  | "Verify Identity"
-  | "Create Profile"
-  | "Employment"
-  | "Assign Access"
-  | "Review & Activate";
-
-type JMLTypes = {
-  currentStage: CurrentStage;
-  setCurrentStage: Dispatch<SetStateAction<CurrentStage>>;
-  activeSection: (typeof subSections)[number];
-  setActiveSection: Dispatch<SetStateAction<(typeof subSections)[number]>>;
+export type JMLContextValue = {
+  state: JMLState;
+  dispatch: Dispatch<JMLAction>;
 };
 
-export const jmlContext = createContext<JMLTypes | null>(null);
+export const jmlContext = createContext<JMLContextValue | null>(null);

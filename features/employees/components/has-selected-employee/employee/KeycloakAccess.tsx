@@ -1,21 +1,6 @@
 "use client";
 
-import useEmployees from "@/features/employees/hooks/useEmployees";
-import {
-  addEmployeeKeycloakGroup,
-  addEmployeeKeycloakRole,
-  getEmployeeKeycloakAccess,
-  getKeycloakClientRoles,
-  getKeycloakClients,
-  getKeycloakGroups,
-  getKeycloakRealmRoles,
-  removeEmployeeKeycloakGroup,
-  removeEmployeeKeycloakRole,
-  type KeycloakClient,
-  type KeycloakGroup,
-  type KeycloakRole,
-  type KeycloakUserAccess,
-} from "@/features/employees/services/employee";
+import useEmployeeKeycloakAccess from "@/features/employees/hooks/useEmployeeKeycloakAccess";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import Button from "@/global-components/ui/Button";
@@ -23,18 +8,9 @@ import ContainerTitle from "@/global-components/ui/ContainerTitle";
 import DataTable, {
   type DataTableColumn,
 } from "@/global-components/ui/DataTable";
-import { execute } from "@/lib";
-import { useEffect, useMemo, useState } from "react";
 
 const SESSION_IMPACT =
   "Session impact: Adding or removing Keycloak groups or roles will revoke all active Powerdeed sessions for this employee so they receive a fresh entitlement snapshot on next login. Always review active sessions before making changes.";
-
-type PickerMode = "group" | "realm-role" | "client-role" | null;
-type RemovalTarget =
-  | { type: "group"; id: string; name: string }
-  | { type: "realm-role"; name: string }
-  | { type: "client-role"; clientId: string; name: string }
-  | null;
 
 const pageSize = 8;
 
@@ -42,228 +18,38 @@ const paginate = <T,>(rows: T[], page: number) =>
   rows.slice((page - 1) * pageSize, page * pageSize);
 
 export default function KeycloakAccess() {
-  const { state } = useEmployees();
-  const employee = state.selectedEmployee;
-  const [keycloakAccess, setKeycloakAccess] =
-    useState<KeycloakUserAccess | null>(null);
-  const [groups, setGroups] = useState<KeycloakGroup[]>([]);
-  const [realmRoles, setRealmRoles] = useState<KeycloakRole[]>([]);
-  const [clients, setClients] = useState<KeycloakClient[]>([]);
-  const [clientRoles, setClientRoles] = useState<KeycloakRole[]>([]);
-  const [selectedClientId, setSelectedClientId] = useState("");
-  const [pickerMode, setPickerMode] = useState<PickerMode>(null);
-  const [removalTarget, setRemovalTarget] = useState<RemovalTarget>(null);
-  const [search, setSearch] = useState("");
-  const [pickerPage, setPickerPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isPickerLoading, setIsPickerLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [pickerError, setPickerError] = useState("");
-  const keycloakUserId = employee?.keycloakUserId;
-
-  const refreshAccess = () => {
-    if (!keycloakUserId) return;
-
-    execute(() => getEmployeeKeycloakAccess(keycloakUserId), {
-      setLoading: setIsLoading,
-      setError,
-      onSuccess: setKeycloakAccess,
-    });
-  };
-
-  useEffect(() => {
-    if (!keycloakUserId) {
-      setKeycloakAccess(null);
-      return;
-    }
-
-    refreshAccess();
-  }, [keycloakUserId]);
-
-  useEffect(() => {
-    if (!pickerMode) return;
-
-    setSearch("");
-    setPickerPage(1);
-    setPickerError("");
-
-    if (pickerMode === "group") {
-      execute(getKeycloakGroups, {
-        setLoading: setIsPickerLoading,
-        setError: setPickerError,
-        onSuccess: setGroups,
-      });
-    }
-
-    if (pickerMode === "realm-role") {
-      execute(getKeycloakRealmRoles, {
-        setLoading: setIsPickerLoading,
-        setError: setPickerError,
-        onSuccess: setRealmRoles,
-      });
-    }
-
-    if (pickerMode === "client-role") {
-      execute(getKeycloakClients, {
-        setLoading: setIsPickerLoading,
-        setError: setPickerError,
-        onSuccess: (clients) => {
-          setClients(clients);
-          const firstClient = clients.find((client) => client.enabled)?.clientId;
-          setSelectedClientId(firstClient ?? clients[0]?.clientId ?? "");
-        },
-      });
-    }
-  }, [pickerMode]);
-
-  useEffect(() => {
-    if (pickerMode !== "client-role" || !selectedClientId) {
-      setClientRoles([]);
-      return;
-    }
-
-    execute(() => getKeycloakClientRoles(selectedClientId), {
-      setLoading: setIsPickerLoading,
-      setError: setPickerError,
-      onSuccess: setClientRoles,
-    });
-  }, [pickerMode, selectedClientId]);
-
-  const keycloakGroupMembershipList = keycloakAccess?.groups ?? [];
-  const directRealmRolesList = keycloakAccess?.realmRoles ?? [];
-  const clientRoleList = useMemo(
-    () =>
-      (keycloakAccess?.clientRoles ?? []).flatMap((clientRoleGroup) =>
-        clientRoleGroup.roles.map((role) => ({
-          id: `${clientRoleGroup.clientId}-${role.id}`,
-          clientId: clientRoleGroup.clientId,
-          role: role.name,
-        })),
-      ),
-    [keycloakAccess?.clientRoles],
-  );
+  const {
+    employee,
+    clients,
+    selectedClientId,
+    setSelectedClientId,
+    pickerMode,
+    removalTarget,
+    setRemovalTarget,
+    search,
+    setSearch,
+    pickerPage,
+    setPickerPage,
+    isLoading,
+    isPickerLoading,
+    isSaving,
+    error,
+    pickerError,
+    keycloakGroupMembershipList,
+    directRealmRolesList,
+    clientRoleList,
+    groupRows,
+    realmRoleRows,
+    clientRoleRows,
+    openPicker,
+    closePicker,
+    addGroup,
+    addRealmRole,
+    addClientRole,
+    confirmRemoval,
+  } = useEmployeeKeycloakAccess();
 
   if (!employee) return null;
-
-  const closePicker = () => setPickerMode(null);
-
-  const afterKeycloakMutation = () => {
-    refreshAccess();
-    closePicker();
-  };
-
-  const addGroup = (groupId: string) => {
-    if (!keycloakUserId) return;
-
-    execute(() => addEmployeeKeycloakGroup(keycloakUserId, groupId), {
-      setLoading: setIsSaving,
-      setError: setPickerError,
-      onSuccess: afterKeycloakMutation,
-    });
-  };
-
-  const addRealmRole = (roleName: string) => {
-    if (!keycloakUserId) return;
-
-    execute(
-      () => addEmployeeKeycloakRole(keycloakUserId, { scope: "realm", roleName }),
-      {
-        setLoading: setIsSaving,
-        setError: setPickerError,
-        onSuccess: afterKeycloakMutation,
-      },
-    );
-  };
-
-  const addClientRole = (roleName: string) => {
-    if (!keycloakUserId || !selectedClientId) return;
-
-    execute(
-      () =>
-        addEmployeeKeycloakRole(keycloakUserId, {
-          scope: "client",
-          clientId: selectedClientId,
-          roleName,
-        }),
-      {
-        setLoading: setIsSaving,
-        setError: setPickerError,
-        onSuccess: afterKeycloakMutation,
-      },
-    );
-  };
-
-  const confirmRemoval = () => {
-    if (!keycloakUserId || !removalTarget) return;
-
-    const action =
-      removalTarget.type === "group"
-        ? () => removeEmployeeKeycloakGroup(keycloakUserId, removalTarget.id)
-        : removalTarget.type === "realm-role"
-          ? () =>
-              removeEmployeeKeycloakRole(keycloakUserId, {
-                scope: "realm",
-                roleName: removalTarget.name,
-              })
-          : () =>
-              removeEmployeeKeycloakRole(keycloakUserId, {
-                scope: "client",
-                clientId: removalTarget.clientId,
-                roleName: removalTarget.name,
-              });
-
-    execute(action, {
-      setLoading: setIsSaving,
-      setError,
-      onSuccess: () => {
-        setRemovalTarget(null);
-        refreshAccess();
-      },
-    });
-  };
-
-  const groupRows = groups
-    .filter((group) =>
-      [group.name, group.path].some((value) =>
-        (value ?? "").toLowerCase().includes(search.toLowerCase()),
-      ),
-    )
-    .map((group) => ({
-      ...group,
-      assigned: keycloakGroupMembershipList.some(
-        (assignedGroup) => assignedGroup.id === group.id,
-      ),
-    }));
-
-  const realmRoleRows = realmRoles
-    .filter((role) =>
-      [role.name, role.description].some((value) =>
-        (value ?? "").toLowerCase().includes(search.toLowerCase()),
-      ),
-    )
-    .map((role) => ({
-      ...role,
-      assigned: directRealmRolesList.some(
-        (assignedRole) => assignedRole.name === role.name,
-      ),
-    }));
-
-  const assignedClientRoleNames = new Set(
-    clientRoleList
-      .filter((role) => role.clientId === selectedClientId)
-      .map((role) => role.role),
-  );
-  const clientRoleRows = clientRoles
-    .filter((role) =>
-      [role.name, role.description].some((value) =>
-        (value ?? "").toLowerCase().includes(search.toLowerCase()),
-      ),
-    )
-    .map((role) => ({
-      ...role,
-      assigned: assignedClientRoleNames.has(role.name),
-    }));
 
   const actionColumn = <T extends { assigned: boolean; name: string }>({
     onAdd,
@@ -318,7 +104,7 @@ export default function KeycloakAccess() {
             <Button
               buttonText="Add Group"
               icon={<FontAwesomeIcon icon={["fas", "plus"]} />}
-              clickAction={() => setPickerMode("group")}
+              clickAction={() => openPicker("group")}
             />
           }
         />
@@ -377,7 +163,7 @@ export default function KeycloakAccess() {
             <Button
               buttonText="Add Realm Role"
               icon={<FontAwesomeIcon icon={["fas", "plus"]} />}
-              clickAction={() => setPickerMode("realm-role")}
+              clickAction={() => openPicker("realm-role")}
             />
           }
         />
@@ -420,7 +206,7 @@ export default function KeycloakAccess() {
             <Button
               buttonText="Add Client Role"
               icon={<FontAwesomeIcon icon={["fas", "plus"]} />}
-              clickAction={() => setPickerMode("client-role")}
+              clickAction={() => openPicker("client-role")}
             />
           }
         />

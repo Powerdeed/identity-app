@@ -1,9 +1,12 @@
 "use client";
 
-import useJMLStates from "./useJMLStates";
+import { useContext } from "react";
+import { jmlContext } from "../context/JMLContext";
 
 export default function useJML() {
-  const state = useJMLStates();
+  const context = useContext(jmlContext);
 
-  return { state };
+  if (!context) throw new Error("useJML must be used within JMLProvider.");
+
+  return context;
 }

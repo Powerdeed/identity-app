@@ -1,266 +1,39 @@
 "use client";
 
-import useEmployees from "@features/employees/hooks/useEmployees";
+import useEmployeePowerdeedAccess from "@features/employees/hooks/useEmployeePowerdeedAccess";
 import UserPermissions from "../../tables/UserPermissions";
 import UserPermissionExceptions from "../../tables/UserExceptions";
 import UserRoles from "../../tables/UserRoles";
-import { useEffect, useState } from "react";
-import { execute } from "@/lib";
-import {
-  getAccessRegistry,
-  type AccessRegistry,
-} from "@/features/employees/services/permissions";
 import PermissionPicker from "../../tables/PermissionPicker";
 import RolePicker from "../../tables/RolePicker";
-import { updateEmployeeAccess } from "@/features/employees/services/employee";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { RoleAssignment, RoleId } from "@/app/auth";
 import Button from "@/global-components/ui/Button";
-
-type AccessPickerMode = "permission" | "role" | null;
-
-type RoleRemovalDialog =
-  | {
-      type: "confirm";
-      roleIndex: number;
-      roleId: string;
-    }
-  | {
-      type: "blocked";
-      roleId: string;
-    }
-  | null;
-
-const SUPER_ADMIN_ROLE = "platform.super_admin";
-
-function formatRoleLabel(role: string) {
-  return role
-    .replace(/[._-]+/g, " ")
-    .split(" ")
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
+import { formatLabel } from "@/features/employees/utils/formatLabel";
 
 export default function PowerdeedAccess() {
-  const { state } = useEmployees();
-  const employee = state.selectedEmployee;
-  const [accessRegistry, setAccessRegistry] = useState<AccessRegistry | null>(
-    null,
-  );
-  const [pickerMode, setPickerMode] = useState<AccessPickerMode>(null);
-  const [roleRemovalDialog, setRoleRemovalDialog] =
-    useState<RoleRemovalDialog>(null);
-  const [permissionRemovalTarget, setPermissionRemovalTarget] = useState<
-    string | null
-  >(null);
   const {
-    employees,
-    setEmployees,
-    setFetchingPermissions,
-    setFetchingPermissionsError,
-    setPermissions,
-    setIsPermissionsRegistryOpen,
-    setFetchingEmployeeData,
-    setFetchingEmployeeDataError,
-    setSelectedEmployee,
-  } = state;
-
-  useEffect(() => {
-    const fetchPermissions = async () =>
-      execute(getAccessRegistry, {
-        setLoading: setFetchingPermissions,
-        setError: setFetchingPermissionsError,
-        onSuccess: (registry) => {
-          setAccessRegistry(registry);
-          setPermissions(Object.values(registry.permissions));
-        },
-      });
-
-    fetchPermissions();
-  }, [setFetchingPermissions, setFetchingPermissionsError, setPermissions]);
+    state,
+    employee,
+    accessRegistry,
+    pickerMode,
+    roleRemovalDialog,
+    setRoleRemovalDialog,
+    permissionRemovalTarget,
+    setPermissionRemovalTarget,
+    directPermissions,
+    effectivePermissions,
+    assignedRoles,
+    rolePermissionsCount,
+    openPicker,
+    closePicker,
+    addDirectPermission,
+    confirmDirectPermissionRemoval,
+    addRole,
+    removeRole,
+    confirmRoleRemoval,
+  } = useEmployeePowerdeedAccess();
 
   if (!employee) return null;
-
-  const directPermissions = employee.access?.directPermissions ?? [];
-  const effectivePermissions = employee.permissions ?? [];
-  const assignedRoles = employee.access?.roles ?? [];
-
-  const closePicker = () => {
-    setPickerMode(null);
-    setIsPermissionsRegistryOpen(false);
-  };
-
-  const updateAccess = (input: {
-    roles?: RoleAssignment[];
-    directPermissions?: string[];
-  }) =>
-    updateEmployeeAccess(employee.id, {
-      access: {
-        appAccess: employee.access?.appAccess ?? [],
-        roles: input.roles ?? assignedRoles,
-        directPermissions: input.directPermissions ?? directPermissions,
-      },
-    });
-
-  const addDirectPermission = (permission: string) => {
-    if (
-      directPermissions.includes(permission) ||
-      effectivePermissions.includes(permission)
-    ) {
-      return;
-    }
-
-    const nextDirectPermissions = [...new Set([...directPermissions, permission])];
-
-    execute(
-      () => updateAccess({ directPermissions: nextDirectPermissions }),
-      {
-        setLoading: setFetchingEmployeeData,
-        setError: setFetchingEmployeeDataError,
-        onSuccess: (updatedEmployee) => {
-          setSelectedEmployee(updatedEmployee);
-          setEmployees((employees) =>
-            employees.map((listedEmployee) =>
-              listedEmployee.id === updatedEmployee.id
-                ? updatedEmployee
-                : listedEmployee,
-            ),
-          );
-          closePicker();
-        },
-      },
-    );
-  };
-
-  const removeDirectPermission = (permission: string) => {
-    setPermissionRemovalTarget(permission);
-  };
-
-  const confirmDirectPermissionRemoval = () => {
-    if (!permissionRemovalTarget) return;
-
-    const permission = permissionRemovalTarget;
-    setPermissionRemovalTarget(null);
-
-    execute(
-      () =>
-        updateAccess({
-          directPermissions: directPermissions.filter(
-            (directPermission) => directPermission !== permission,
-          ),
-        }),
-      {
-        setLoading: setFetchingEmployeeData,
-        setError: setFetchingEmployeeDataError,
-        onSuccess: (updatedEmployee) => {
-          setSelectedEmployee(updatedEmployee);
-          setEmployees((employees) =>
-            employees.map((listedEmployee) =>
-              listedEmployee.id === updatedEmployee.id
-                ? updatedEmployee
-                : listedEmployee,
-            ),
-          );
-        },
-      },
-    );
-  };
-
-  const addRole = (role: string) => {
-    if (assignedRoles.some((assignment) => assignment.roleId === role)) return;
-
-    execute(
-      () =>
-        updateAccess({
-          roles: [
-            ...assignedRoles,
-            {
-              roleId: role as RoleId,
-              scopeType: "global",
-              assignedAt: new Date().toISOString(),
-            },
-          ],
-        }),
-      {
-        setLoading: setFetchingEmployeeData,
-        setError: setFetchingEmployeeDataError,
-        onSuccess: (updatedEmployee) => {
-          setSelectedEmployee(updatedEmployee);
-          setEmployees((employees) =>
-            employees.map((listedEmployee) =>
-              listedEmployee.id === updatedEmployee.id
-                ? updatedEmployee
-                : listedEmployee,
-            ),
-          );
-          closePicker();
-        },
-      },
-    );
-  };
-
-  const removeRole = (roleIndex: number) => {
-    const role = assignedRoles[roleIndex];
-    if (!role) return;
-
-    if (role.roleId === SUPER_ADMIN_ROLE) {
-      const hasAnotherActiveSuperAdmin = employees.some(
-        (listedEmployee) =>
-          listedEmployee.id !== employee.id &&
-          listedEmployee.status === "active" &&
-          listedEmployee.access?.roles?.some(
-            (assignment) => assignment.roleId === SUPER_ADMIN_ROLE,
-          ),
-      );
-
-      if (!hasAnotherActiveSuperAdmin) {
-        setRoleRemovalDialog({
-          type: "blocked",
-          roleId: role.roleId,
-        });
-        return;
-      }
-    }
-
-    setRoleRemovalDialog({
-      type: "confirm",
-      roleIndex,
-      roleId: role.roleId,
-    });
-  };
-
-  const confirmRoleRemoval = () => {
-    if (roleRemovalDialog?.type !== "confirm") return;
-
-    const roleIndex = roleRemovalDialog.roleIndex;
-    setRoleRemovalDialog(null);
-
-    execute(
-      () =>
-        updateAccess({
-          roles: assignedRoles.filter((_, index) => index !== roleIndex),
-        }),
-      {
-        setLoading: setFetchingEmployeeData,
-        setError: setFetchingEmployeeDataError,
-        onSuccess: (updatedEmployee) => {
-          setSelectedEmployee(updatedEmployee);
-          setEmployees((employees) =>
-            employees.map((listedEmployee) =>
-              listedEmployee.id === updatedEmployee.id
-                ? updatedEmployee
-                : listedEmployee,
-            ),
-          );
-        },
-      },
-    );
-  };
-
-  const rolePermissionsCount = roleRemovalDialog?.roleId
-    ? (accessRegistry?.rolePermissions[roleRemovalDialog.roleId]?.length ?? 0)
-    : 0;
 
   return (
     <div className="vertical-layout__outer">
@@ -273,21 +46,15 @@ export default function PowerdeedAccess() {
       <UserRoles
         roles={assignedRoles}
         isSaving={state.fetchingEmployeeData}
-        onAssignRole={() => {
-          setPickerMode("role");
-          setIsPermissionsRegistryOpen(true);
-        }}
+        onAssignRole={() => openPicker("role")}
         onRemoveRole={removeRole}
       />
       <UserPermissions permissions={employee.permissions ?? []} />
       <UserPermissionExceptions
         permissions={directPermissions}
         isSaving={state.fetchingEmployeeData}
-        onAddPermission={() => {
-          setPickerMode("permission");
-          setIsPermissionsRegistryOpen(true);
-        }}
-        onRemovePermission={removeDirectPermission}
+        onAddPermission={() => openPicker("permission")}
+        onRemovePermission={setPermissionRemovalTarget}
       />
 
       {state.isPermissionsRegistryOpen && pickerMode && (
@@ -386,8 +153,8 @@ export default function PowerdeedAccess() {
                 </div>
                 <div className="mt-1 text-style__small-text text-(--primary-grey)">
                   {roleRemovalDialog.type === "blocked"
-                    ? `${formatRoleLabel(roleRemovalDialog.roleId)} cannot be removed from ${employee.name} because no other active employee currently has that role. Assign another active super admin first, then try again.`
-                    : `You are about to remove ${formatRoleLabel(roleRemovalDialog.roleId)} from ${employee.name}. This can reduce their effective permissions${rolePermissionsCount ? ` by up to ${rolePermissionsCount} permissions` : ""} and may affect their ability to manage users, roles, apps, and security settings.`}
+                    ? `${formatLabel(roleRemovalDialog.roleId)} cannot be removed from ${employee.name} because no other active employee currently has that role. Assign another active super admin first, then try again.`
+                    : `You are about to remove ${formatLabel(roleRemovalDialog.roleId)} from ${employee.name}. This can reduce their effective permissions${rolePermissionsCount ? ` by up to ${rolePermissionsCount} permissions` : ""} and may affect their ability to manage users, roles, apps, and security settings.`}
                 </div>
               </div>
 

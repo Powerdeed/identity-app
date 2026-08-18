@@ -1,65 +1,17 @@
 "use client";
 
 import useEmployees from "@/features/employees/hooks/useEmployees";
-import {
-  getEmployeeLastActivity,
-  getEmployeeSessions,
-} from "@/features/employees/services/employee";
+import useEmployeeOverviewData from "@/features/employees/hooks/useEmployeeOverviewData";
 import ContainerTitle from "@/global-components/ui/ContainerTitle";
 import { getDateFormatted, getDateTimeFormatted } from "@/globals";
-import { execute } from "@/lib";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useState } from "react";
 import { formatLabel } from "../../../utils/formatLabel";
 
 export default function Overview() {
   const { state } = useEmployees();
-  const [currentTime, setCurrentTime] = useState<number | null>(null);
+  const overview = useEmployeeOverviewData();
 
   const employee = state.selectedEmployee;
-  const employeeId = employee?.id;
-  const {
-    setEmployeeSessions,
-    setEmployeeLastActivity,
-    setFetchingEmployeeData,
-    setFetchingEmployeeDataError,
-  } = state;
-
-  useEffect(() => {
-    const getTime = () => setCurrentTime(Date.now());
-    getTime();
-  }, []);
-
-  useEffect(() => {
-    if (!employeeId) {
-      setEmployeeSessions([]);
-      setEmployeeLastActivity(null);
-      return;
-    }
-
-    const fetchEmployeeSessions = async () =>
-      execute(() => getEmployeeSessions(employeeId), {
-        setLoading: setFetchingEmployeeData,
-        setError: setFetchingEmployeeDataError,
-        onSuccess: setEmployeeSessions,
-      });
-
-    const fetchEmployeeLastActivity = async () =>
-      execute(() => getEmployeeLastActivity(employeeId), {
-        setLoading: setFetchingEmployeeData,
-        setError: setFetchingEmployeeDataError,
-        onSuccess: setEmployeeLastActivity,
-      });
-
-    fetchEmployeeSessions();
-    fetchEmployeeLastActivity();
-  }, [
-    employeeId,
-    setEmployeeSessions,
-    setEmployeeLastActivity,
-    setFetchingEmployeeData,
-    setFetchingEmployeeDataError,
-  ]);
 
   if (!employee) return null;
 
@@ -84,21 +36,13 @@ export default function Overview() {
     },
   };
 
-  const activeSessionCount = state.employeeSessions.filter((session) => {
-    if (session.isRevoked) return false;
-    if (!session.expiresAt) return true;
-    if (currentTime === null) return false;
-
-    return new Date(session.expiresAt).getTime() > currentTime;
-  }).length;
-
   const userOverview = {
     "Employee Number": employee.employment?.employeeNumber,
     Manager: employee.employment?.managerId,
     "Active Sessions":
       state.fetchingEmployeeData && state.employeeSessions.length === 0
         ? "Loading..."
-        : String(activeSessionCount),
+        : String(overview.activeSessionCount),
     "Last Activity": state.fetchingEmployeeData
       ? "Loading..."
       : getDateTimeFormatted(state.employeeLastActivity?.occurredAt) ||

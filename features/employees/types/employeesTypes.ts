@@ -19,3 +19,22 @@ export interface EmployeeTableRow {
   lastActivity?: string | null;
   sessions: number;
 }
+
+export type EmploymentDetails = {
+  "EMPLOYEE NUMBER": string;
+  DEPARTMENT: DepartmentId;
+  TEAM: string;
+  "JOB TITLE": string;
+  "POSITION CODE": string;
+  SENIORITY: SeniorityLevel;
+  "EMPLOYEE TYPE": EmploymentType;
+  "WORK LOCATION": string;
+  "START DATE": string;
+  "END DATE": string;
+  MANAGER: string;
+};
+import type {
+  DepartmentId,
+  EmploymentType,
+  SeniorityLevel,
+} from "@/app/auth";

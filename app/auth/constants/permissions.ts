@@ -5,6 +5,7 @@ export const PERMISSIONS = {
   IDENTITY_USERS_READ: "identity.users.read",
   IDENTITY_USERS_MANAGE: "identity.users.manage",
   IDENTITY_JML_READ: "identity.jml.read",
+  IDENTITY_JML_MANAGE: "identity.jml.manage",
   IDENTITY_ACCESS_READ: "identity.access.read",
   IDENTITY_ACCESS_MANAGE: "identity.access.manage",
   IDENTITY_SESSIONS_READ: "identity.sessions.read",
