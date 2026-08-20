@@ -1,6 +1,6 @@
 "use client";
 
-import useJMLAccessOptions from "../../hooks/useJMLAccessOptions";
+import useJMLAccessOptions from "../../../hooks/useJMLAccessOptions";
 
 export default function AssignAccess() {
   const access = useJMLAccessOptions();

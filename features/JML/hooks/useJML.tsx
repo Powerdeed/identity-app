@@ -4,9 +4,9 @@ import { useContext } from "react";
 import { jmlContext } from "../context/JMLContext";
 
 export default function useJML() {
-  const context = useContext(jmlContext);
+  const state = useContext(jmlContext);
 
-  if (!context) throw new Error("useJML must be used within JMLProvider.");
+  if (!state) throw new Error("useJML must be used within JMLProvider.");
 
-  return context;
+  return state;
 }

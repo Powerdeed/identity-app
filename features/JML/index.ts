@@ -4,12 +4,12 @@ export { default as JMLView } from "./components/JMLView";
 export * from "./components/JMLView";
 
 // Workflow stages
-export { default as SearchKeycloak } from "./components/stages/SearchKeycloak";
-export { default as VerifyIdentity } from "./components/stages/VerifyIdentity";
-export { default as CreateProfile } from "./components/stages/CreateProfile";
-export { default as JMLEmployment } from "./components/stages/Employment";
-export { default as AssignAccess } from "./components/stages/AssignAccess";
-export { default as ReviewAndActivate } from "./components/stages/Review&Activate";
+export { default as SearchKeycloak } from "./components/joiners/stages/SearchKeycloak";
+export { default as VerifyIdentity } from "./components/joiners/stages/VerifyIdentity";
+export { default as CreateProfile } from "./components/joiners/stages/CreateProfile";
+export { default as JMLEmployment } from "./components/joiners/stages/Employment";
+export { default as AssignAccess } from "./components/joiners/stages/AssignAccess";
+export { default as ReviewAndActivate } from "./components/joiners/stages/Review&Activate";
 
 // Context
 export { default as JMLProvider } from "./context/JMLProvider";

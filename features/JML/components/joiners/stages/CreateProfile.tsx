@@ -1,6 +1,6 @@
 "use client";
 
-import useJML from "../../hooks/useJML";
+import useJML from "../../../hooks/useJML";
 
 const sectionTitle =
   "The Powerdeed profile will be created in pending state. No access will be granted at this stage.";

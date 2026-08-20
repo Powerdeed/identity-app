@@ -3,7 +3,7 @@
 import Dotindicator from "@/global-components/ui/Dotindicator";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getDateTimeFormatted } from "@/globals";
-import useJML from "../../hooks/useJML";
+import useJML from "../../../hooks/useJML";
 
 const sectionTitle = "Verify the Keycloak identity before proceeding.";
 

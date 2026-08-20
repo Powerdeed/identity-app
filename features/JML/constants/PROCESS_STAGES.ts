@@ -11,9 +11,13 @@ export type CurrentStage = keyof typeof joinerStages;
 
 export const joinerStageOrder = Object.keys(joinerStages) as CurrentStage[];
 
-export const MoverStages = [
+export const moverStages = [
   "Select Person",
   "Specify Change",
   "Preview Impact",
   "Confirm Move",
 ];
+
+export type CurrentMoverStage = keyof typeof moverStages;
+
+export const moverStageOrder = Object.keys(moverStages) as CurrentMoverStage[];

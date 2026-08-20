@@ -1,7 +1,7 @@
 "use client";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import useJML from "../../hooks/useJML";
+import useJML from "../../../hooks/useJML";
 
 const sectionTitle =
   "Review the configuration below before activating the account.";
