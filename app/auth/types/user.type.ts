@@ -74,6 +74,8 @@ export type EmploymentType = "full_time" | "part_time" | "contractor" | "intern"
 export interface EmploymentProfile {
   employeeNumber?: string;
   departmentId?: DepartmentId;
+  departmentRefId?: string;
+  jobProfileId?: string;
   teamIds?: string[];
   managerId?: string;
   jobTitle?: string;

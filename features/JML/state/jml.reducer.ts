@@ -1,12 +1,32 @@
 import type { RoleId } from "@/app/auth";
+import { getISOCalendarDate } from "@/global-components/layout/date";
+import type { MoveReasonCode } from "../constants/MOVE_REASONS";
 import type { CurrentStage } from "../constants/PROCESS_STAGES";
+import type { CurrentMoverStage } from "../constants/PROCESS_STAGES";
 import type {
   JMLEmploymentForm,
   JMLProvisionedUser,
   JMLSection,
   KeycloakGroup,
   KeycloakUser,
+  MoveEmployeeResult,
+  MoverChangeForm,
 } from "../types/jml.types";
+
+export type MoverState = {
+  currentStage: CurrentMoverStage;
+  search: string;
+  searchResults: JMLProvisionedUser[];
+  selectedUser: JMLProvisionedUser | null;
+  keycloakGroups: KeycloakGroup[];
+  change: MoverChangeForm;
+  result: MoveEmployeeResult | null;
+  isSearching: boolean;
+  isLoadingSelection: boolean;
+  isProcessing: boolean;
+  error: string;
+  successMessage: string;
+};
 
 export type JMLState = {
   currentStage: CurrentStage;
@@ -26,6 +46,7 @@ export type JMLState = {
   isProcessing: boolean;
   error: string;
   successMessage: string;
+  mover: MoverState;
 };
 
 export type JMLAction =
@@ -53,7 +74,36 @@ export type JMLAction =
   | { type: "access/loading"; loading: boolean }
   | { type: "workflow/loading"; loading: boolean }
   | { type: "feedback/error"; message: string }
-  | { type: "feedback/success"; message: string };
+  | { type: "feedback/success"; message: string }
+  | { type: "mover/stage-set"; stage: CurrentMoverStage }
+  | { type: "mover/search-set"; search: string }
+  | { type: "mover/search-results"; users: JMLProvisionedUser[] }
+  | { type: "mover/search-loading"; loading: boolean }
+  | { type: "mover/selection-loading"; loading: boolean }
+  | {
+      type: "mover/select";
+      user: JMLProvisionedUser;
+      groups: KeycloakGroup[];
+    }
+  | { type: "mover/clear-selection" }
+  | {
+      type: "mover/change-update";
+      field: keyof MoverChangeForm;
+      value: string;
+    }
+  | {
+      type: "mover/department-select";
+      id: string;
+      code: string;
+      name: string;
+    }
+  | { type: "mover/job-profile-select"; id: string; title: string }
+  | { type: "mover/manager-select"; id: string; name: string }
+  | { type: "mover/reason-select"; reasonCode: MoveReasonCode }
+  | { type: "mover/processing"; loading: boolean }
+  | { type: "mover/error"; message: string }
+  | { type: "mover/success"; message: string }
+  | { type: "mover/completed"; result: MoveEmployeeResult };
 
 export const initialJMLState: JMLState = {
   currentStage: "Search Keycloak",
@@ -83,6 +133,31 @@ export const initialJMLState: JMLState = {
   isProcessing: false,
   error: "",
   successMessage: "",
+  mover: {
+    currentStage: "Select Person",
+    search: "",
+    searchResults: [],
+    selectedUser: null,
+    keycloakGroups: [],
+    change: {
+      departmentId: "",
+      departmentCode: "",
+      departmentName: "",
+      jobProfileId: "",
+      jobTitle: "",
+      managerId: "",
+      managerName: "",
+      reasonCode: "",
+      reasonDetails: "",
+      effectiveDate: getISOCalendarDate(),
+    },
+    result: null,
+    isSearching: false,
+    isLoadingSelection: false,
+    isProcessing: false,
+    error: "",
+    successMessage: "",
+  },
 };
 
 const toggleValue = <T,>(values: T[], value: T) =>
@@ -144,6 +219,155 @@ export function jmlReducer(state: JMLState, action: JMLAction): JMLState {
       return { ...state, error: action.message };
     case "feedback/success":
       return { ...state, successMessage: action.message };
+    case "mover/stage-set":
+      return {
+        ...state,
+        mover: { ...state.mover, currentStage: action.stage, error: "" },
+      };
+    case "mover/search-set":
+      return {
+        ...state,
+        mover: { ...state.mover, search: action.search },
+      };
+    case "mover/search-results":
+      return {
+        ...state,
+        mover: { ...state.mover, searchResults: action.users },
+      };
+    case "mover/search-loading":
+      return {
+        ...state,
+        mover: { ...state.mover, isSearching: action.loading },
+      };
+    case "mover/selection-loading":
+      return {
+        ...state,
+        mover: { ...state.mover, isLoadingSelection: action.loading },
+      };
+    case "mover/select":
+      return {
+        ...state,
+        mover: {
+          ...state.mover,
+          selectedUser: action.user,
+          keycloakGroups: action.groups,
+          searchResults: [],
+          error: "",
+          successMessage: "",
+          result: null,
+          change: {
+            departmentId: "",
+            departmentCode: "",
+            departmentName: "",
+            jobProfileId: "",
+            jobTitle: "",
+            managerId: "",
+            managerName: "",
+            reasonCode: "",
+            reasonDetails: "",
+            effectiveDate: getISOCalendarDate(),
+          },
+        },
+      };
+    case "mover/clear-selection":
+      return {
+        ...state,
+        mover: {
+          ...initialJMLState.mover,
+          search: state.mover.search,
+        },
+      };
+    case "mover/change-update":
+      return {
+        ...state,
+        mover: {
+          ...state.mover,
+          change: { ...state.mover.change, [action.field]: action.value },
+          error: "",
+        },
+      };
+    case "mover/department-select":
+      return {
+        ...state,
+        mover: {
+          ...state.mover,
+          change: {
+            ...state.mover.change,
+            departmentId: action.id,
+            departmentCode: action.code,
+            departmentName: action.name,
+            jobProfileId: "",
+            jobTitle: "",
+          },
+          error: "",
+        },
+      };
+    case "mover/job-profile-select":
+      return {
+        ...state,
+        mover: {
+          ...state.mover,
+          change: {
+            ...state.mover.change,
+            jobProfileId: action.id,
+            jobTitle: action.title,
+          },
+          error: "",
+        },
+      };
+    case "mover/manager-select":
+      return {
+        ...state,
+        mover: {
+          ...state.mover,
+          change: {
+            ...state.mover.change,
+            managerId: action.id,
+            managerName: action.name,
+          },
+          error: "",
+        },
+      };
+    case "mover/reason-select":
+      return {
+        ...state,
+        mover: {
+          ...state.mover,
+          change: {
+            ...state.mover.change,
+            reasonCode: action.reasonCode,
+            reasonDetails:
+              action.reasonCode === "other"
+                ? state.mover.change.reasonDetails
+                : "",
+          },
+          error: "",
+        },
+      };
+    case "mover/processing":
+      return {
+        ...state,
+        mover: { ...state.mover, isProcessing: action.loading },
+      };
+    case "mover/error":
+      return {
+        ...state,
+        mover: { ...state.mover, error: action.message },
+      };
+    case "mover/success":
+      return {
+        ...state,
+        mover: { ...state.mover, successMessage: action.message },
+      };
+    case "mover/completed":
+      return {
+        ...state,
+        mover: {
+          ...state.mover,
+          selectedUser: action.result.user,
+          result: action.result,
+        },
+      };
     default:
       return state;
   }

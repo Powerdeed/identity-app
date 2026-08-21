@@ -16,8 +16,8 @@ export const moverStages = [
   "Specify Change",
   "Preview Impact",
   "Confirm Move",
-];
+] as const;
 
-export type CurrentMoverStage = keyof typeof moverStages;
+export type CurrentMoverStage = (typeof moverStages)[number];
 
-export const moverStageOrder = Object.keys(moverStages) as CurrentMoverStage[];
+export const moverStageOrder: readonly CurrentMoverStage[] = moverStages;

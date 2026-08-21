@@ -7,7 +7,12 @@ import type {
   KeycloakGroup,
   KeycloakUser,
   KeycloakUserAccess,
+  MoveEmployeeInput,
+  MoveEmployeeResult,
+  AssignmentHistoryPage,
+  AccessReviewStatus,
 } from "../types/jml.types";
+import type { MoveReasonCode } from "../constants/MOVE_REASONS";
 
 export const searchKeycloakUsers = async (
   search: string,
@@ -106,3 +111,47 @@ export const activateJMLUser = async (
 
   return data.user;
 };
+
+export const searchActiveJMLEmployees = async (
+  search: string,
+): Promise<JMLProvisionedUser[]> => {
+  const data = await identityApiRequest<{
+    users: JMLProvisionedUser[];
+    total: number;
+    page: number;
+    pageSize: number;
+  }>({
+    method: "GET",
+    url: "/users",
+    params: { search, status: "active", pageSize: 10 },
+  });
+
+  return data.users;
+};
+
+export const moveJMLEmployee = (
+  userId: string,
+  input: MoveEmployeeInput,
+): Promise<MoveEmployeeResult> =>
+  identityApiRequest<MoveEmployeeResult>({
+    method: "POST",
+    url: `/users/${userId}/move`,
+    data: input,
+  });
+
+export const getEmployeeAssignmentHistory = (
+  userId: string,
+  params: {
+    reasonCode?: MoveReasonCode;
+    accessReviewStatus?: AccessReviewStatus;
+    effectiveDateFrom?: string;
+    effectiveDateTo?: string;
+    page?: number;
+    pageSize?: number;
+  } = {},
+) =>
+  identityApiRequest<AssignmentHistoryPage>({
+    method: "GET",
+    url: `/users/${userId}/assignment-history`,
+    params,
+  });

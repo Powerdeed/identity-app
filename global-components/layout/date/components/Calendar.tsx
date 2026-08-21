@@ -31,6 +31,7 @@ export interface CalendarProps {
   selectedDates?: readonly Date[];
   isDateHighlighted?: (date: Date) => boolean;
   onDateSelect?: (date: Date) => void;
+  isDateDisabled?: (date: Date) => boolean;
   emphasized?: boolean;
   disabled?: boolean;
 }
@@ -45,6 +46,7 @@ export default function Calendar({
   selectedDates = [],
   isDateHighlighted,
   onDateSelect,
+  isDateDisabled,
   emphasized = false,
   disabled = false,
 }: CalendarProps) {
@@ -166,12 +168,13 @@ export default function Calendar({
           );
           const highlighted = isDateHighlighted?.(date) ?? false;
           const isToday = isSameDay(date, new Date());
+          const dateDisabled = disabled || (isDateDisabled?.(date) ?? false);
 
           return (
             <button
               key={day}
               type="button"
-              disabled={disabled}
+              disabled={dateDisabled}
               aria-pressed={isSelected}
               className={`grid h-7.5 place-items-center rounded-[8px] duration-150 disabled:cursor-default ${
                 isSelected
@@ -180,9 +183,9 @@ export default function Calendar({
                     ? "bg-(--secondary-blue)/15 text-(--primary-blue)"
                     : isToday
                       ? "border border-(--secondary-blue) text-(--primary-blue)"
-                      : !disabled
-                        ? "hover:bg-(--terciary-grey)/30"
-                        : ""
+                    : !dateDisabled
+                      ? "hover:bg-(--terciary-grey)/30"
+                      : "text-(--primary-grey) opacity-40"
               }`}
               onClick={() => onDateSelect?.(date)}
             >

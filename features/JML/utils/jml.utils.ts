@@ -9,6 +9,9 @@ import type {
 import type {
   JMLAccessAssignment,
   JMLEmploymentForm,
+  JMLProvisionedUser,
+  MoveEmployeeInput,
+  MoverChangeForm,
 } from "../types/jml.types";
 
 const appIdByRolePrefix: Partial<Record<string, AppId>> = {
@@ -65,5 +68,69 @@ export function toAccessAssignment(
       assignedAt,
       reason: "JML joiner provisioning",
     })),
+  };
+}
+
+export function getMoverChangeRows(
+  user: JMLProvisionedUser | null,
+  change: MoverChangeForm,
+) {
+  const currentEmployment = user?.employment;
+  return [
+    {
+      key: "departmentId" as const,
+      label: "Department",
+      current: currentEmployment?.departmentId ?? "",
+      next: change.departmentName || currentEmployment?.departmentId || "",
+      changed: Boolean(change.departmentId) &&
+        (currentEmployment?.departmentRefId
+          ? change.departmentId !== currentEmployment.departmentRefId
+          : change.departmentCode !== currentEmployment?.departmentId),
+    },
+    {
+      key: "jobProfileId" as const,
+      label: "Title",
+      current: currentEmployment?.jobTitle ?? "",
+      next: change.jobTitle || currentEmployment?.jobTitle || "",
+      changed: Boolean(change.jobProfileId) &&
+        (currentEmployment?.jobProfileId
+          ? change.jobProfileId !== currentEmployment.jobProfileId
+          : change.jobTitle !== currentEmployment?.jobTitle),
+    },
+    {
+      key: "managerId" as const,
+      label: "Manager",
+      current: currentEmployment?.managerId ?? "",
+      next:
+        change.managerName || change.managerId || currentEmployment?.managerId || "",
+      changed: Boolean(change.managerId) &&
+        change.managerId !== currentEmployment?.managerId,
+    },
+  ];
+}
+
+export function toMoveEmployeeInput(
+  user: JMLProvisionedUser,
+  change: MoverChangeForm,
+): MoveEmployeeInput {
+  const rows = getMoverChangeRows(user, change);
+  const employment: MoveEmployeeInput["employment"] = {};
+  if (rows.some((row) => row.key !== "managerId" && row.changed)) {
+    employment.departmentId = change.departmentId;
+    employment.jobProfileId = change.jobProfileId;
+  }
+  if (rows.find((row) => row.key === "managerId")?.changed) {
+    employment.managerId = change.managerId;
+  }
+
+  if (!change.reasonCode) {
+    throw new Error("A structured move reason is required.");
+  }
+
+  return {
+    employment,
+    reasonCode: change.reasonCode,
+    reasonDetails: change.reasonDetails.trim() || undefined,
+    effectiveDate: change.effectiveDate,
   };
 }

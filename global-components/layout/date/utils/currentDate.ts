@@ -1,5 +1,21 @@
 type DateInput = Date | string | number | null | undefined;
 
+export function getISOCalendarDate(
+  date = new Date(),
+  timeZone = "Africa/Nairobi",
+) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((candidate) => candidate.type === type)?.value ?? "";
+
+  return `${part("year")}-${part("month")}-${part("day")}`;
+}
+
 export function getDateFormatted(rawDate?: DateInput) {
   const date = rawDate ? new Date(rawDate) : new Date();
 
