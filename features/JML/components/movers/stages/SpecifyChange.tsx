@@ -1,12 +1,12 @@
 "use client";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { InputArea } from "@/global-components/layout/FormWrapper";
 import {
   getISOCalendarDate,
   SingleDatePicker,
 } from "@/global-components/layout/date";
+import Notice from "@/global-components/ui/Notice";
 import SearchableSelect from "@/global-components/ui/SearchableSelect";
 import useActiveOrganizationCatalog from "@/features/policies-and-configuration/hooks/useActiveOrganizationCatalog";
 import { MOVE_REASONS } from "../../../constants/MOVE_REASONS";
@@ -173,29 +173,26 @@ export default function SpecifyChange() {
       </div>
 
       {(catalog.error || managerCandidates.error) && (
-        <div className="rounded-lg border border-(--primary-red)/30 bg-(--primary-red)/10 p-3 text-style__small-text text-(--primary-red)">
+        <Notice tone="danger">
           {catalog.error || managerCandidates.error}
-        </div>
+        </Notice>
       )}
 
       {(!workflow.hasEmploymentChange ||
         !workflow.hasReason ||
         !workflow.hasEffectiveDate ||
         !workflow.hasCompleteAssignmentSelection) && (
-        <div className="horizontal-layout p-2.5 border border-(--primary-yellow) bg-(--primary-yellow-faded)/10 text-(--primary-yellow) rounded-[10px]">
-          <FontAwesomeIcon icon={["fas", "exclamation-triangle"]} />
-          <div className="text-style__small-text">
-            {!workflow.hasCompleteAssignmentSelection
-              ? "Select a job profile for the chosen department."
-              : !workflow.hasEmploymentChange
+        <Notice tone="warning">
+          {!workflow.hasCompleteAssignmentSelection
+            ? "Select a job profile for the chosen department."
+            : !workflow.hasEmploymentChange
               ? "Change at least one assignment field to continue."
               : !workflow.hasReason
                 ? workflow.change.reasonCode === "other"
                   ? "Provide details for the Other move reason."
                   : "Select a structured reason for the move."
                 : "Select the date on which this move became effective."}
-          </div>
-        </div>
+        </Notice>
       )}
     </div>
   );

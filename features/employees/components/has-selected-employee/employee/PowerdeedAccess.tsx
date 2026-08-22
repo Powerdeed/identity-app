@@ -1,5 +1,6 @@
 "use client";
 
+import { hasPermission, PERMISSIONS } from "@/app/auth";
 import useEmployeePowerdeedAccess from "@features/employees/hooks/useEmployeePowerdeedAccess";
 import UserPermissions from "../../tables/UserPermissions";
 import UserPermissionExceptions from "../../tables/UserExceptions";
@@ -9,8 +10,10 @@ import RolePicker from "../../tables/RolePicker";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Button from "@/global-components/ui/Button";
 import { formatLabel } from "@/features/employees/utils/formatLabel";
+import { useGlobals } from "@/globals";
 
 export default function PowerdeedAccess() {
+  const { globalStates } = useGlobals();
   const {
     state,
     employee,
@@ -35,6 +38,10 @@ export default function PowerdeedAccess() {
 
   if (!employee) return null;
 
+  const canManageAccess =
+    hasPermission(globalStates.user, PERMISSIONS.IDENTITY_ACCESS_MANAGE) ||
+    hasPermission(globalStates.user, PERMISSIONS.IDENTITY_USERS_MANAGE);
+
   return (
     <div className="vertical-layout__outer">
       {state.fetchingEmployeeDataError ? (
@@ -46,18 +53,22 @@ export default function PowerdeedAccess() {
       <UserRoles
         roles={assignedRoles}
         isSaving={state.fetchingEmployeeData}
-        onAssignRole={() => openPicker("role")}
-        onRemoveRole={removeRole}
+        onAssignRole={canManageAccess ? () => openPicker("role") : undefined}
+        onRemoveRole={canManageAccess ? removeRole : undefined}
       />
       <UserPermissions permissions={employee.permissions ?? []} />
       <UserPermissionExceptions
         permissions={directPermissions}
         isSaving={state.fetchingEmployeeData}
-        onAddPermission={() => openPicker("permission")}
-        onRemovePermission={setPermissionRemovalTarget}
+        onAddPermission={
+          canManageAccess ? () => openPicker("permission") : undefined
+        }
+        onRemovePermission={
+          canManageAccess ? setPermissionRemovalTarget : undefined
+        }
       />
 
-      {state.isPermissionsRegistryOpen && pickerMode && (
+      {canManageAccess && state.isPermissionsRegistryOpen && pickerMode && (
         <div
           className="overlay"
           onClick={closePicker}
@@ -124,7 +135,7 @@ export default function PowerdeedAccess() {
         </div>
       )}
 
-      {roleRemovalDialog && (
+      {canManageAccess && roleRemovalDialog && (
         <div
           className="overlay"
           onClick={() => setRoleRemovalDialog(null)}
@@ -187,7 +198,7 @@ export default function PowerdeedAccess() {
         </div>
       )}
 
-      {permissionRemovalTarget && (
+      {canManageAccess && permissionRemovalTarget && (
         <div
           className="overlay"
           onClick={() => setPermissionRemovalTarget(null)}

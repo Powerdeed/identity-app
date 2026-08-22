@@ -7,6 +7,7 @@ import type {
   UserStatus,
 } from "@/app/auth";
 import type { MoveReasonCode } from "../constants/MOVE_REASONS";
+import type { LeaverReasonCode } from "../constants/LEAVER_REASONS";
 
 export const JML_SECTIONS = ["Joiner", "Mover", "Leaver"] as const;
 
@@ -28,13 +29,14 @@ export type KeycloakUser = {
 
 export type JMLEmploymentForm = {
   departmentId: string;
-  teamIds: string;
+  departmentCode: string;
+  departmentName: string;
+  jobProfileId: string;
   jobTitle: string;
-  positionCode: string;
-  seniorityLevel: string;
   employmentType: string;
   workLocation: string;
   managerId: string;
+  managerName: string;
   startDate: string;
 };
 
@@ -99,6 +101,31 @@ export type MoveEmployeeResult = {
   reasonCode: MoveReasonCode;
   effectiveDate: string;
   assignmentHistoryId: string;
+};
+
+export type LeaverOffboardInput = {
+  status: "suspended" | "archived";
+  reason: string;
+  effectiveDate: string;
+  disableKeycloak: boolean;
+  removeKeycloakGroups: boolean;
+};
+
+export type LeaverOffboardResult = {
+  user: JMLProvisionedUser;
+  revokedSessionCount: number;
+  removedGroupCount: number;
+  keycloakDisabled: boolean;
+  effectiveDate: string;
+};
+
+export type LeaverExitForm = {
+  reasonCode: LeaverReasonCode | "";
+  reasonDetails: string;
+  effectiveDate: string;
+  targetStatus: "suspended" | "archived";
+  disableKeycloak: boolean;
+  removeKeycloakGroups: boolean;
 };
 
 export type AssignmentHistorySource =

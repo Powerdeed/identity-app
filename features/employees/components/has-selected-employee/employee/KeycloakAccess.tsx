@@ -1,5 +1,6 @@
 "use client";
 
+import { hasPermission, PERMISSIONS } from "@/app/auth";
 import useEmployeeKeycloakAccess from "@/features/employees/hooks/useEmployeeKeycloakAccess";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -8,6 +9,7 @@ import ContainerTitle from "@/global-components/ui/ContainerTitle";
 import DataTable, {
   type DataTableColumn,
 } from "@/global-components/ui/DataTable";
+import { useGlobals } from "@/globals";
 
 const SESSION_IMPACT =
   "Session impact: Adding or removing Keycloak groups or roles will revoke all active Powerdeed sessions for this employee so they receive a fresh entitlement snapshot on next login. Always review active sessions before making changes.";
@@ -18,6 +20,7 @@ const paginate = <T,>(rows: T[], page: number) =>
   rows.slice((page - 1) * pageSize, page * pageSize);
 
 export default function KeycloakAccess() {
+  const { globalStates } = useGlobals();
   const {
     employee,
     clients,
@@ -51,6 +54,10 @@ export default function KeycloakAccess() {
 
   if (!employee) return null;
 
+  const canManageKeycloakAccess =
+    hasPermission(globalStates.user, PERMISSIONS.IDENTITY_ACCESS_MANAGE) ||
+    hasPermission(globalStates.user, PERMISSIONS.IDENTITY_USERS_MANAGE);
+
   const actionColumn = <T extends { assigned: boolean; name: string }>({
     onAdd,
   }: {
@@ -62,7 +69,7 @@ export default function KeycloakAccess() {
       <Button
         buttonText={row.assigned ? "Assigned" : "Add"}
         buttonType={row.assigned ? "light" : "primary"}
-        disabled={row.assigned || isSaving}
+        disabled={row.assigned || isSaving || !canManageKeycloakAccess}
         clickAction={() => onAdd(row)}
       />
     ),
@@ -101,11 +108,13 @@ export default function KeycloakAccess() {
         <ContainerTitle
           title="Keycloak Group Membership"
           el={
-            <Button
-              buttonText="Add Group"
-              icon={<FontAwesomeIcon icon={["fas", "plus"]} />}
-              clickAction={() => openPicker("group")}
-            />
+            canManageKeycloakAccess ? (
+              <Button
+                buttonText="Add Group"
+                icon={<FontAwesomeIcon icon={["fas", "plus"]} />}
+                clickAction={() => openPicker("group")}
+              />
+            ) : null
           }
         />
 
@@ -134,17 +143,19 @@ export default function KeycloakAccess() {
                 </div>
               ) : null}
             </div>
-            <FontAwesomeIcon
-              icon={["fas", "xmark"]}
-              className="buttonize text-style__small-text p-1.5 rounded-[10px] text-(--primary-grey) hover:bg-(--primary-red)/10 hover:text-(--primary-red)"
-              onClick={() =>
-                setRemovalTarget({
-                  type: "group",
-                  id: group.id,
-                  name: group.name,
-                })
-              }
-            />
+            {canManageKeycloakAccess ? (
+              <FontAwesomeIcon
+                icon={["fas", "xmark"]}
+                className="buttonize text-style__small-text p-1.5 rounded-[10px] text-(--primary-grey) hover:bg-(--primary-red)/10 hover:text-(--primary-red)"
+                onClick={() =>
+                  setRemovalTarget({
+                    type: "group",
+                    id: group.id,
+                    name: group.name,
+                  })
+                }
+              />
+            ) : null}
           </div>
         ))}
 
@@ -160,11 +171,13 @@ export default function KeycloakAccess() {
         <ContainerTitle
           title="Direct Realm Roles"
           el={
-            <Button
-              buttonText="Add Realm Role"
-              icon={<FontAwesomeIcon icon={["fas", "plus"]} />}
-              clickAction={() => openPicker("realm-role")}
-            />
+            canManageKeycloakAccess ? (
+              <Button
+                buttonText="Add Realm Role"
+                icon={<FontAwesomeIcon icon={["fas", "plus"]} />}
+                clickAction={() => openPicker("realm-role")}
+              />
+            ) : null
           }
         />
 
@@ -181,13 +194,15 @@ export default function KeycloakAccess() {
                 </div>
               ) : null}
             </div>
-            <FontAwesomeIcon
-              icon={["fas", "xmark"]}
-              className="buttonize text-style__small-text p-1.5 rounded-[10px] text-(--primary-grey) hover:bg-(--primary-red)/10 hover:text-(--primary-red)"
-              onClick={() =>
-                setRemovalTarget({ type: "realm-role", name: role.name })
-              }
-            />
+            {canManageKeycloakAccess ? (
+              <FontAwesomeIcon
+                icon={["fas", "xmark"]}
+                className="buttonize text-style__small-text p-1.5 rounded-[10px] text-(--primary-grey) hover:bg-(--primary-red)/10 hover:text-(--primary-red)"
+                onClick={() =>
+                  setRemovalTarget({ type: "realm-role", name: role.name })
+                }
+              />
+            ) : null}
           </div>
         ))}
 
@@ -203,11 +218,13 @@ export default function KeycloakAccess() {
         <ContainerTitle
           title="Client Roles"
           el={
-            <Button
-              buttonText="Add Client Role"
-              icon={<FontAwesomeIcon icon={["fas", "plus"]} />}
-              clickAction={() => openPicker("client-role")}
-            />
+            canManageKeycloakAccess ? (
+              <Button
+                buttonText="Add Client Role"
+                icon={<FontAwesomeIcon icon={["fas", "plus"]} />}
+                clickAction={() => openPicker("client-role")}
+              />
+            ) : null
           }
         />
 
@@ -222,17 +239,19 @@ export default function KeycloakAccess() {
                 {clientRole.clientId}
               </div>
             </div>
-            <FontAwesomeIcon
-              icon={["fas", "xmark"]}
-              className="buttonize text-style__small-text p-1.5 rounded-[10px] text-(--primary-grey) hover:bg-(--primary-red)/10 hover:text-(--primary-red)"
-              onClick={() =>
-                setRemovalTarget({
-                  type: "client-role",
-                  clientId: clientRole.clientId,
-                  name: clientRole.role,
-                })
-              }
-            />
+            {canManageKeycloakAccess ? (
+              <FontAwesomeIcon
+                icon={["fas", "xmark"]}
+                className="buttonize text-style__small-text p-1.5 rounded-[10px] text-(--primary-grey) hover:bg-(--primary-red)/10 hover:text-(--primary-red)"
+                onClick={() =>
+                  setRemovalTarget({
+                    type: "client-role",
+                    clientId: clientRole.clientId,
+                    name: clientRole.role,
+                  })
+                }
+              />
+            ) : null}
           </div>
         ))}
 
@@ -243,7 +262,7 @@ export default function KeycloakAccess() {
         )}
       </div>
 
-      {pickerMode && (
+      {canManageKeycloakAccess && pickerMode && (
         <div className="overlay" onClick={closePicker}>
           <div
             className="flex max-h-[calc(100vh-3rem)] w-full max-w-6xl flex-col rounded-[10px] border border-(--terciary-grey) bg-white p-5"
@@ -389,7 +408,7 @@ export default function KeycloakAccess() {
         </div>
       )}
 
-      {removalTarget && (
+      {canManageKeycloakAccess && removalTarget && (
         <div className="overlay" onClick={() => setRemovalTarget(null)}>
           <div
             className="w-full max-w-xl rounded-[10px] border border-(--terciary-grey) bg-white p-5 shadow-xl"

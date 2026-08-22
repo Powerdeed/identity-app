@@ -6,6 +6,9 @@ import { hasPermission, PERMISSIONS } from "@/app/auth";
 import { useGlobals } from "@/globals";
 import Button from "@/global-components/ui/Button";
 import DataTable, { type DataTableColumn } from "@/global-components/ui/DataTable";
+import Notice from "@/global-components/ui/Notice";
+import PageTabs, { type PageTab } from "@/global-components/ui/PageTabs";
+import StatusChip from "@/global-components/ui/StatusChip";
 import SearchableSelect from "@/global-components/ui/SearchableSelect";
 import { SectionTitle } from "@/global-components/ui/Title";
 import CatalogStatusDialog from "./components/CatalogStatusDialog";
@@ -19,9 +22,28 @@ import type {
 } from "./types/organizationCatalog.types";
 
 type CatalogTab = "Departments" | "Job Profiles";
+type ConfigurationTab = "System Policies" | CatalogTab;
 type StatusDialog =
   | { type: "department"; record: Department }
   | { type: "jobProfile"; record: JobProfile };
+
+type PolicyRow = {
+  policy: string;
+  value: string;
+  scope: string;
+};
+
+type IntegrationRow = {
+  service: string;
+  detail: string;
+  status: "connected" | "degraded" | "planned";
+};
+
+const configurationTabs: PageTab<ConfigurationTab>[] = [
+  { id: "System Policies", label: "System Policies" },
+  { id: "Departments", label: "Departments" },
+  { id: "Job Profiles", label: "Job Profiles" },
+];
 
 function StatusBadge({ status }: { status: ReferenceDataStatus }) {
   const active = status === "active";
@@ -33,11 +55,148 @@ function StatusBadge({ status }: { status: ReferenceDataStatus }) {
   );
 }
 
+function SystemPolicies({
+  catalogError,
+  catalogLoading,
+}: {
+  catalogError?: string;
+  catalogLoading: boolean;
+}) {
+  const sessionPolicyRows: PolicyRow[] = [
+    {
+      policy: "Session duration",
+      value: "Configured by identity-service session TTL",
+      scope: "All staff apps",
+    },
+    {
+      policy: "Current-session revocation",
+      value: "Protected by default",
+      scope: "Administrators",
+    },
+    {
+      policy: "Revocation behavior",
+      value: "Immediate, entitlement snapshot cleared",
+      scope: "Identity sessions",
+    },
+  ];
+
+  const accessPolicyRows: PolicyRow[] = [
+    {
+      policy: "Direct permission exceptions",
+      value: "Require documented reason and review",
+      scope: "Powerdeed access",
+    },
+    {
+      policy: "Role assignment approval",
+      value: "Manager or security admin approval",
+      scope: "High-risk roles",
+    },
+    {
+      policy: "Temporary access max duration",
+      value: "90 days",
+      scope: "Direct exceptions",
+    },
+  ];
+
+  const integrationRows: IntegrationRow[] = [
+    {
+      service: "Identity Service",
+      detail: "Users, sessions, audit events, and permission registry",
+      status: catalogError ? "degraded" : "connected",
+    },
+    {
+      service: "Cloud SQL",
+      detail: "Accessed through identity-service persistence layer",
+      status: catalogError ? "degraded" : "connected",
+    },
+    {
+      service: "Keycloak",
+      detail: "Authentication, SSO, groups, realm roles, and client roles",
+      status: "connected",
+    },
+    {
+      service: "Campaign Engine",
+      detail: "Periodic access certification workflow",
+      status: "planned",
+    },
+  ];
+
+  const policyColumns: DataTableColumn<PolicyRow>[] = [
+    { id: "policy", header: "POLICY", accessorKey: "policy" },
+    { id: "value", header: "VALUE", accessorKey: "value" },
+    { id: "scope", header: "SCOPE", accessorKey: "scope" },
+  ];
+
+  const integrationColumns: DataTableColumn<IntegrationRow>[] = [
+    { id: "service", header: "SERVICE", accessorKey: "service" },
+    { id: "detail", header: "DETAIL", accessorKey: "detail" },
+    {
+      id: "status",
+      header: "STATUS",
+      cell: (row) => (
+        <StatusChip
+          tone={
+            row.status === "connected"
+              ? "green"
+              : row.status === "degraded"
+                ? "yellow"
+                : "grey"
+          }
+        >
+          {row.status}
+        </StatusChip>
+      ),
+    },
+  ];
+
+  return (
+    <div className="vertical-layout__outer">
+      {catalogError ? (
+        <Notice tone="danger">{catalogError}</Notice>
+      ) : (
+        <Notice tone="info">
+          These policies describe the current operating model. Editable policy
+          storage can be added once approvals and campaign scheduling are
+          modeled as durable workflows.
+        </Notice>
+      )}
+
+      <div className="grid gap-5 xl:grid-cols-2">
+        <DataTable
+          title="Session Policy"
+          description={catalogLoading ? "Checking identity-service..." : "Session handling rules"}
+          columns={policyColumns}
+          data={sessionPolicyRows}
+          getRowId={(row) => row.policy}
+          minWidthClassName="min-w-140"
+        />
+        <DataTable
+          title="Access Policy"
+          description="Role, permission, and exception governance"
+          columns={policyColumns}
+          data={accessPolicyRows}
+          getRowId={(row) => row.policy}
+          minWidthClassName="min-w-140"
+        />
+      </div>
+
+      <DataTable
+        title="Integration Status"
+        description="Runtime systems that support authentication and authorization"
+        columns={integrationColumns}
+        data={integrationRows}
+        getRowId={(row) => row.service}
+        minWidthClassName="min-w-180"
+      />
+    </div>
+  );
+}
+
 export default function PoliciesAndConfiguration() {
   const catalog = useOrganizationCatalog();
   const activeCatalog = useActiveOrganizationCatalog();
   const { globalStates } = useGlobals();
-  const [tab, setTab] = useState<CatalogTab>("Departments");
+  const [tab, setTab] = useState<ConfigurationTab>("System Policies");
   const [departmentFormOpen, setDepartmentFormOpen] = useState(false);
   const [jobProfileFormOpen, setJobProfileFormOpen] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState<Department>();
@@ -168,23 +327,24 @@ export default function PoliciesAndConfiguration() {
     <div className="uniform-page-display min-w-0 text-style__body">
       <SectionTitle
         title="Policies & Configuration"
-        subtitle="Organization structure and identity reference data"
+        subtitle="System policy display and identity reference data"
       />
 
-      <div className="flex w-fit overflow-hidden rounded-[8px] bg-white text-style__small-text">
-        {(["Departments", "Job Profiles"] as CatalogTab[]).map((catalogTab) => (
-          <button
-            key={catalogTab}
-            type="button"
-            onClick={() => setTab(catalogTab)}
-            className={`buttonize px-4 py-2.5 ${tab === catalogTab ? "bg-(--secondary-blue) text-white" : ""}`}
-          >
-            {catalogTab}
-          </button>
-        ))}
-      </div>
+      <PageTabs
+        tabs={configurationTabs}
+        activeTab={tab}
+        onChange={setTab}
+      />
 
-      <div className="flex flex-wrap items-center justify-between gap-2.5">
+      {tab === "System Policies" ? (
+        <SystemPolicies
+          catalogError={catalog.error || activeCatalog.error}
+          catalogLoading={catalog.isLoading || activeCatalog.isLoading}
+        />
+      ) : null}
+
+      {tab !== "System Policies" ? (
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
         <div className="w-48">
           <SearchableSelect
             value={catalog.status}
@@ -213,20 +373,21 @@ export default function PoliciesAndConfiguration() {
             }}
           />
         )}
-      </div>
+        </div>
+      ) : null}
 
-      {catalog.error && (
+      {tab !== "System Policies" && catalog.error && (
         <div className="rounded-[8px] border border-(--primary-red)/30 bg-(--primary-red)/10 p-3 text-(--primary-red)">
           {catalog.error}
         </div>
       )}
-      {catalog.successMessage && (
+      {tab !== "System Policies" && catalog.successMessage && (
         <div className="rounded-[8px] border border-(--primary-green)/30 bg-(--primary-green)/10 p-3 text-(--primary-green)">
           {catalog.successMessage}
         </div>
       )}
 
-      {departmentFormOpen && (
+      {tab !== "System Policies" && departmentFormOpen && (
         <DepartmentForm
           key={editingDepartment?.id ?? "new-department"}
           department={editingDepartment}
@@ -236,7 +397,7 @@ export default function PoliciesAndConfiguration() {
           onSave={(input) => catalog.saveDepartment(input, editingDepartment)}
         />
       )}
-      {jobProfileFormOpen && (
+      {tab !== "System Policies" && jobProfileFormOpen && (
         <JobProfileForm
           key={editingJobProfile?.id ?? "new-job-profile"}
           jobProfile={editingJobProfile}
@@ -269,7 +430,7 @@ export default function PoliciesAndConfiguration() {
             dataType: "departments",
           }}
         />
-      ) : (
+      ) : tab === "Job Profiles" ? (
         <DataTable
           title="Job Profiles"
           description={catalog.isLoading ? "Loading job profiles..." : `${catalog.jobProfileTotal} job profile${catalog.jobProfileTotal === 1 ? "" : "s"}`}
@@ -291,7 +452,7 @@ export default function PoliciesAndConfiguration() {
             dataType: "job profiles",
           }}
         />
-      )}
+      ) : null}
 
       {statusDialog && (
         <CatalogStatusDialog

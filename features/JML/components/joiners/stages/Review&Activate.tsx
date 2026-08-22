@@ -1,6 +1,6 @@
 "use client";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Notice from "@/global-components/ui/Notice";
 import useJML from "../../../hooks/useJML";
 
 const sectionTitle =
@@ -17,8 +17,9 @@ export default function ReviewAndActivate() {
   const reviewDetails = {
     Name: state.selectedKeycloakUser?.name ?? "-",
     Email: state.selectedKeycloakUser?.email ?? "-",
-    Department: state.employment.departmentId || "-",
-    Role: state.employment.jobTitle || "-",
+    Department: state.employment.departmentName || "-",
+    "Job Profile": state.employment.jobTitle || "-",
+    Manager: state.employment.managerName || "None",
     "KC Groups": selectedGroups.join(", ") || "None",
     "PD Roles": state.selectedRoleIds.join(", ") || "None",
   };
@@ -44,10 +45,9 @@ export default function ReviewAndActivate() {
         ))}
       </div>
 
-      <div className="p-2.5 horizontal-layout border border-(--secondary-blue) text-(--secondary-blue) bg-(--secondary-blue)/10 rounded-[10px] text-style__small-text">
-        <FontAwesomeIcon icon={["fas", "info-circle"]} />
+      <Notice>
         {actionInfo}
-      </div>
+      </Notice>
     </div>
   );
 }

@@ -75,9 +75,12 @@ export interface EmploymentProfile {
   employeeNumber?: string;
   departmentId?: DepartmentId;
   departmentRefId?: string;
+  departmentName?: string;
   jobProfileId?: string;
   teamIds?: string[];
   managerId?: string;
+  managerName?: string;
+  managerEmail?: string;
   jobTitle?: string;
   positionCode?: string;
   seniorityLevel?: SeniorityLevel;

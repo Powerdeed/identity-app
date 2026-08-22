@@ -1,11 +1,13 @@
 "use client";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { moverStages } from "@/features/JML/constants/PROCESS_STAGES";
+import { moverStageOrder } from "@/features/JML/constants/PROCESS_STAGES";
 import { getInitials } from "@/global-components/layout/nav";
 import Button from "@/global-components/ui/Button";
+import Notice from "@/global-components/ui/Notice";
 import { getRandomClassNameColor } from "@/globals";
 import useMoverWorkflow from "../../hooks/useMoverWorkflow";
+import WorkflowSteps from "../WorkflowSteps";
 import ConfirmMove from "./stages/ConfirmMove";
 import PreviewImpact from "./stages/PreviewImpact";
 import SelectPerson from "./stages/SelectPerson";
@@ -17,37 +19,7 @@ export default function Movers() {
 
   return (
     <div className="vertical-layout__outer">
-      <div className="text-style__small-text flex items-center gap-1">
-        {moverStages.map((stage, index) => (
-          <div key={stage} className="flex items-center gap-1">
-            {index !== 0 && <hr className="w-6 border-(--terciary-grey)" />}
-            <div
-              className={`w-6 h-6 rounded-full font-bold text-center grid items-center justify-center ${
-                workflow.currentStage === stage
-                  ? "bg-(--secondary-blue) text-white"
-                  : workflow.currentStageIndex > index
-                    ? "bg-(--secondary-green) text-white"
-                    : "border border-(--terciary-grey) text-(--primary-grey)"
-              }`}
-            >
-              {workflow.currentStageIndex <= index ? (
-                index + 1
-              ) : (
-                <FontAwesomeIcon icon={["fas", "check"]} />
-              )}
-            </div>
-            <div
-              className={
-                workflow.currentStage === stage
-                  ? "text-(--secondary-blue)"
-                  : "text-(--primary-grey)"
-              }
-            >
-              {stage}
-            </div>
-          </div>
-        ))}
-      </div>
+      <WorkflowSteps stages={moverStageOrder} currentStage={workflow.currentStage} />
 
       <div className="feature-container-vertical">
         <div className="horizontal-layout justify-between text-style__big-text border-b border-(--terciary-grey) pb-2.5">
@@ -75,15 +47,11 @@ export default function Movers() {
         {workflow.currentStage === "Confirm Move" && <ConfirmMove />}
 
         {workflow.error && (
-          <div className="rounded-[10px] border border-(--primary-red)/30 bg-(--primary-red)/10 p-3 text-style__small-text text-(--primary-red)">
-            {workflow.error}
-          </div>
+          <Notice tone="danger">{workflow.error}</Notice>
         )}
 
         {workflow.successMessage && (
-          <div className="rounded-[10px] border border-(--primary-green)/30 bg-(--primary-green)/10 p-3 text-style__small-text text-(--primary-green)">
-            {workflow.successMessage}
-          </div>
+          <Notice tone="success">{workflow.successMessage}</Notice>
         )}
 
         <div className="horizontal-layout justify-between border-t border-(--terciary-grey) pt-2.5">

@@ -17,8 +17,22 @@ export type AccessRegistry = {
   keycloakCoarseRoles: UserPermission[];
 };
 
+export type AccessGovernanceSummary = {
+  totalUsers: number;
+  roleAssignments: Record<string, number>;
+  appAssignments: Record<string, number>;
+  directPermissionAssignments: Record<string, number>;
+};
+
 export const getAccessRegistry = async (): Promise<AccessRegistry> =>
   await identityApiRequest<AccessRegistry>({
     method: "GET",
     url: `/permissions/registry`,
   });
+
+export const getAccessGovernanceSummary =
+  async (): Promise<AccessGovernanceSummary> =>
+    await identityApiRequest<AccessGovernanceSummary>({
+      method: "GET",
+      url: `/admin/access-governance/summary`,
+    });

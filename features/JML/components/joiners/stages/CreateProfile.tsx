@@ -1,5 +1,6 @@
 "use client";
 
+import Notice from "@/global-components/ui/Notice";
 import useJML from "../../../hooks/useJML";
 
 const sectionTitle =
@@ -14,11 +15,11 @@ export default function CreateProfile() {
         {sectionTitle}
       </div>
 
-      <div className="text-(--primary-yellow) text-style__small-text p-2.5 rounded-[10px] bg-(--primary-yellow-faded)/30 border border-(--primary-yellow)">
+      <Notice tone="warning">
         {state.provisionedUser
           ? `${state.provisionedUser.name}'s pending profile has been created.`
           : "Profile will be created in pending state. Access assignment and activation happen in subsequent steps."}
-      </div>
+      </Notice>
     </div>
   );
 }

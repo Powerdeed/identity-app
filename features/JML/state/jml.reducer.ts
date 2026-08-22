@@ -3,11 +3,15 @@ import { getISOCalendarDate } from "@/global-components/layout/date";
 import type { MoveReasonCode } from "../constants/MOVE_REASONS";
 import type { CurrentStage } from "../constants/PROCESS_STAGES";
 import type { CurrentMoverStage } from "../constants/PROCESS_STAGES";
+import type { CurrentLeaverStage } from "../constants/PROCESS_STAGES";
+import type { LeaverReasonCode } from "../constants/LEAVER_REASONS";
 import type {
   JMLEmploymentForm,
   JMLProvisionedUser,
   JMLSection,
   KeycloakGroup,
+  LeaverExitForm,
+  LeaverOffboardResult,
   KeycloakUser,
   MoveEmployeeResult,
   MoverChangeForm,
@@ -21,6 +25,21 @@ export type MoverState = {
   keycloakGroups: KeycloakGroup[];
   change: MoverChangeForm;
   result: MoveEmployeeResult | null;
+  isSearching: boolean;
+  isLoadingSelection: boolean;
+  isProcessing: boolean;
+  error: string;
+  successMessage: string;
+};
+
+export type LeaverState = {
+  currentStage: CurrentLeaverStage;
+  search: string;
+  searchResults: JMLProvisionedUser[];
+  selectedUser: JMLProvisionedUser | null;
+  keycloakGroups: KeycloakGroup[];
+  exit: LeaverExitForm;
+  result: LeaverOffboardResult | null;
   isSearching: boolean;
   isLoadingSelection: boolean;
   isProcessing: boolean;
@@ -47,6 +66,7 @@ export type JMLState = {
   error: string;
   successMessage: string;
   mover: MoverState;
+  leaver: LeaverState;
 };
 
 export type JMLAction =
@@ -62,6 +82,14 @@ export type JMLAction =
       field: keyof JMLEmploymentForm;
       value: string;
     }
+  | {
+      type: "employment/department-select";
+      id: string;
+      code: string;
+      name: string;
+    }
+  | { type: "employment/job-profile-select"; id: string; title: string }
+  | { type: "employment/manager-select"; id: string; name: string }
   | {
       type: "access/options";
       groups: KeycloakGroup[];
@@ -103,7 +131,28 @@ export type JMLAction =
   | { type: "mover/processing"; loading: boolean }
   | { type: "mover/error"; message: string }
   | { type: "mover/success"; message: string }
-  | { type: "mover/completed"; result: MoveEmployeeResult };
+  | { type: "mover/completed"; result: MoveEmployeeResult }
+  | { type: "leaver/stage-set"; stage: CurrentLeaverStage }
+  | { type: "leaver/search-set"; search: string }
+  | { type: "leaver/search-results"; users: JMLProvisionedUser[] }
+  | { type: "leaver/search-loading"; loading: boolean }
+  | { type: "leaver/selection-loading"; loading: boolean }
+  | {
+      type: "leaver/select";
+      user: JMLProvisionedUser;
+      groups: KeycloakGroup[];
+    }
+  | { type: "leaver/clear-selection" }
+  | {
+      type: "leaver/exit-update";
+      field: keyof LeaverExitForm;
+      value: string | boolean;
+    }
+  | { type: "leaver/reason-select"; reasonCode: LeaverReasonCode }
+  | { type: "leaver/processing"; loading: boolean }
+  | { type: "leaver/error"; message: string }
+  | { type: "leaver/success"; message: string }
+  | { type: "leaver/completed"; result: LeaverOffboardResult };
 
 export const initialJMLState: JMLState = {
   currentStage: "Search Keycloak",
@@ -114,13 +163,14 @@ export const initialJMLState: JMLState = {
   provisionedUser: null,
   employment: {
     departmentId: "",
-    teamIds: "",
+    departmentCode: "",
+    departmentName: "",
+    jobProfileId: "",
     jobTitle: "",
-    positionCode: "",
-    seniorityLevel: "",
     employmentType: "",
     workLocation: "",
     managerId: "",
+    managerName: "",
     startDate: "",
   },
   keycloakGroups: [],
@@ -158,6 +208,27 @@ export const initialJMLState: JMLState = {
     error: "",
     successMessage: "",
   },
+  leaver: {
+    currentStage: "Select Person",
+    search: "",
+    searchResults: [],
+    selectedUser: null,
+    keycloakGroups: [],
+    exit: {
+      reasonCode: "",
+      reasonDetails: "",
+      effectiveDate: getISOCalendarDate(),
+      targetStatus: "suspended",
+      disableKeycloak: true,
+      removeKeycloakGroups: true,
+    },
+    result: null,
+    isSearching: false,
+    isLoadingSelection: false,
+    isProcessing: false,
+    error: "",
+    successMessage: "",
+  },
 };
 
 const toggleValue = <T,>(values: T[], value: T) =>
@@ -185,6 +256,36 @@ export function jmlReducer(state: JMLState, action: JMLAction): JMLState {
       return {
         ...state,
         employment: { ...state.employment, [action.field]: action.value },
+      };
+    case "employment/department-select":
+      return {
+        ...state,
+        employment: {
+          ...state.employment,
+          departmentId: action.id,
+          departmentCode: action.code,
+          departmentName: action.name,
+          jobProfileId: "",
+          jobTitle: "",
+        },
+      };
+    case "employment/job-profile-select":
+      return {
+        ...state,
+        employment: {
+          ...state.employment,
+          jobProfileId: action.id,
+          jobTitle: action.title,
+        },
+      };
+    case "employment/manager-select":
+      return {
+        ...state,
+        employment: {
+          ...state.employment,
+          managerId: action.id,
+          managerName: action.name,
+        },
       };
     case "access/options":
       return {
@@ -364,6 +465,101 @@ export function jmlReducer(state: JMLState, action: JMLAction): JMLState {
         ...state,
         mover: {
           ...state.mover,
+          selectedUser: action.result.user,
+          result: action.result,
+        },
+      };
+    case "leaver/stage-set":
+      return {
+        ...state,
+        leaver: { ...state.leaver, currentStage: action.stage, error: "" },
+      };
+    case "leaver/search-set":
+      return {
+        ...state,
+        leaver: { ...state.leaver, search: action.search },
+      };
+    case "leaver/search-results":
+      return {
+        ...state,
+        leaver: { ...state.leaver, searchResults: action.users },
+      };
+    case "leaver/search-loading":
+      return {
+        ...state,
+        leaver: { ...state.leaver, isSearching: action.loading },
+      };
+    case "leaver/selection-loading":
+      return {
+        ...state,
+        leaver: { ...state.leaver, isLoadingSelection: action.loading },
+      };
+    case "leaver/select":
+      return {
+        ...state,
+        leaver: {
+          ...state.leaver,
+          selectedUser: action.user,
+          keycloakGroups: action.groups,
+          searchResults: [],
+          error: "",
+          successMessage: "",
+          result: null,
+        },
+      };
+    case "leaver/clear-selection":
+      return {
+        ...state,
+        leaver: {
+          ...initialJMLState.leaver,
+          search: state.leaver.search,
+        },
+      };
+    case "leaver/exit-update":
+      return {
+        ...state,
+        leaver: {
+          ...state.leaver,
+          exit: { ...state.leaver.exit, [action.field]: action.value },
+          error: "",
+        },
+      };
+    case "leaver/reason-select":
+      return {
+        ...state,
+        leaver: {
+          ...state.leaver,
+          exit: {
+            ...state.leaver.exit,
+            reasonCode: action.reasonCode,
+            reasonDetails:
+              action.reasonCode === "other"
+                ? state.leaver.exit.reasonDetails
+                : "",
+          },
+          error: "",
+        },
+      };
+    case "leaver/processing":
+      return {
+        ...state,
+        leaver: { ...state.leaver, isProcessing: action.loading },
+      };
+    case "leaver/error":
+      return {
+        ...state,
+        leaver: { ...state.leaver, error: action.message },
+      };
+    case "leaver/success":
+      return {
+        ...state,
+        leaver: { ...state.leaver, successMessage: action.message },
+      };
+    case "leaver/completed":
+      return {
+        ...state,
+        leaver: {
+          ...state.leaver,
           selectedUser: action.result.user,
           result: action.result,
         },

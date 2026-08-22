@@ -1,11 +1,4 @@
-import type {
-  AppId,
-  DepartmentId,
-  EmploymentProfile,
-  EmploymentType,
-  RoleId,
-  SeniorityLevel,
-} from "@/app/auth";
+import type { AppId, EmploymentProfile, EmploymentType, RoleId } from "@/app/auth";
 import type {
   JMLAccessAssignment,
   JMLEmploymentForm,
@@ -27,25 +20,19 @@ export function toEmploymentProfile(
   employment: JMLEmploymentForm,
 ): EmploymentProfile {
   return {
-    departmentId: employment.departmentId
-      ? (employment.departmentId as DepartmentId)
-      : undefined,
-    teamIds: employment.teamIds
-      .split(",")
-      .map((team) => team.trim())
-      .filter(Boolean),
+    departmentId: employment.departmentCode || undefined,
+    departmentRefId: employment.departmentId || undefined,
+    departmentName: employment.departmentName || undefined,
+    jobProfileId: employment.jobProfileId || undefined,
     jobTitle: employment.jobTitle || undefined,
-    positionCode: employment.positionCode || undefined,
-    seniorityLevel: employment.seniorityLevel
-      ? (employment.seniorityLevel as SeniorityLevel)
-      : undefined,
     employmentType: employment.employmentType
       ? (employment.employmentType as EmploymentType)
       : undefined,
     workLocation: employment.workLocation || undefined,
     managerId: employment.managerId || undefined,
+    managerName: employment.managerName || undefined,
     startDate: employment.startDate || undefined,
-  };
+  } as EmploymentProfile;
 }
 
 export function toAccessAssignment(

@@ -7,6 +7,8 @@ import type {
   KeycloakGroup,
   KeycloakUser,
   KeycloakUserAccess,
+  LeaverOffboardInput,
+  LeaverOffboardResult,
   MoveEmployeeInput,
   MoveEmployeeResult,
   AssignmentHistoryPage,
@@ -136,6 +138,16 @@ export const moveJMLEmployee = (
   identityApiRequest<MoveEmployeeResult>({
     method: "POST",
     url: `/users/${userId}/move`,
+    data: input,
+  });
+
+export const offboardJMLUser = (
+  userId: string,
+  input: LeaverOffboardInput,
+): Promise<LeaverOffboardResult> =>
+  identityApiRequest<LeaverOffboardResult>({
+    method: "POST",
+    url: `/admin/users/${userId}/offboard`,
     data: input,
   });
 

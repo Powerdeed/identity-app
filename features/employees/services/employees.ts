@@ -8,10 +8,25 @@ type rawUserData = {
   users: User[];
 };
 
-export const getEmployees = async (): Promise<User[]> => {
+type GetEmployeesParams = {
+  search?: string;
+  status?: string;
+  page?: number;
+  pageSize?: number;
+};
+
+export const getEmployees = async (
+  params: GetEmployeesParams = {},
+): Promise<User[]> => {
   const userData = await identityApiRequest<rawUserData>({
     method: "GET",
     url: "/users",
+    params: {
+      page: params.page ?? 1,
+      pageSize: params.pageSize ?? 100,
+      search: params.search || undefined,
+      status: params.status || undefined,
+    },
   });
 
   return userData.users;

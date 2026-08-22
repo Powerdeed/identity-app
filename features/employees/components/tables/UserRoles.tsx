@@ -28,53 +28,61 @@ const createRoleColumns = ({
 }: {
   onRemoveRole?: (roleIndex: number) => void;
   isSaving?: boolean;
-}): DataTableColumn<PowerdeedRoleRow>[] => [
-  {
-    id: "role",
-    header: "Role",
-    cell: (role) => (
-      <span className="inline-flex rounded-[10px] border border-(--secondary-blue) bg-(--secondary-blue)/10 px-2 py-1 text-(--secondary-blue)">
-        {role.role}
-      </span>
-    ),
-  },
-  {
-    id: "scope",
-    header: "Scope",
-    accessorKey: "scope",
-    cellClassName: "text-(--primary-blue)",
-  },
-  {
-    id: "assignedAt",
-    header: "Assigned",
-    cellClassName: "whitespace-nowrap text-(--primary-grey)",
-    cell: (role) => formatDate(role.assignedAt),
-  },
-  {
-    id: "expiresAt",
-    header: "Expiry",
-    cellClassName: "whitespace-nowrap text-(--primary-grey)",
-    cell: (role) => formatDate(role.expiresAt),
-  },
-  {
-    id: "actions",
-    header: <span className="sr-only">Actions</span>,
-    headerClassName: "w-12 px-2",
-    cellClassName: "px-2",
-    cell: (role) => (
-      <button
-        type="button"
-        title={`Remove ${role.role}`}
-        aria-label={`Remove ${role.role}`}
-        disabled={isSaving || !onRemoveRole}
-        className="grid h-8 w-8 place-items-center rounded-[10px] text-(--primary-grey) duration-150 hover:bg-(--primary-red)/10 hover:text-(--primary-red)"
-        onClick={() => onRemoveRole?.(role.roleIndex)}
-      >
-        <FontAwesomeIcon icon={faXmark} />
-      </button>
-    ),
-  },
-];
+}): DataTableColumn<PowerdeedRoleRow>[] => {
+  const columns: DataTableColumn<PowerdeedRoleRow>[] = [
+    {
+      id: "role",
+      header: "Role",
+      cell: (role) => (
+        <span className="inline-flex rounded-[10px] border border-(--secondary-blue) bg-(--secondary-blue)/10 px-2 py-1 text-(--secondary-blue)">
+          {role.role}
+        </span>
+      ),
+    },
+    {
+      id: "scope",
+      header: "Scope",
+      accessorKey: "scope",
+      cellClassName: "text-(--primary-blue)",
+    },
+    {
+      id: "assignedAt",
+      header: "Assigned",
+      cellClassName: "whitespace-nowrap text-(--primary-grey)",
+      cell: (role) => formatDate(role.assignedAt),
+    },
+    {
+      id: "expiresAt",
+      header: "Expiry",
+      cellClassName: "whitespace-nowrap text-(--primary-grey)",
+      cell: (role) => formatDate(role.expiresAt),
+    },
+  ];
+
+  if (!onRemoveRole) return columns;
+
+  return [
+    ...columns,
+    {
+      id: "actions",
+      header: <span className="sr-only">Actions</span>,
+      headerClassName: "w-12 px-2",
+      cellClassName: "px-2",
+      cell: (role) => (
+        <button
+          type="button"
+          title={`Remove ${role.role}`}
+          aria-label={`Remove ${role.role}`}
+          disabled={isSaving}
+          className="grid h-8 w-8 place-items-center rounded-[10px] text-(--primary-grey) duration-150 hover:bg-(--primary-red)/10 hover:text-(--primary-red)"
+          onClick={() => onRemoveRole(role.roleIndex)}
+        >
+          <FontAwesomeIcon icon={faXmark} />
+        </button>
+      ),
+    },
+  ];
+};
 
 export default function Roles({
   roles,
@@ -102,12 +110,14 @@ export default function Roles({
       title="Powerdeed Roles"
       description={`${roleRows.length} assigned ${roleRows.length === 1 ? "role" : "roles"}`}
       headerAside={
-        <Button
-          buttonText="Assign Role"
-          icon={<FontAwesomeIcon icon={faPlus} />}
-          clickAction={onAssignRole}
-          disabled={isSaving}
-        />
+        onAssignRole ? (
+          <Button
+            buttonText="Assign Role"
+            icon={<FontAwesomeIcon icon={faPlus} />}
+            clickAction={onAssignRole}
+            disabled={isSaving}
+          />
+        ) : null
       }
       columns={roleColumns}
       data={roleRows}

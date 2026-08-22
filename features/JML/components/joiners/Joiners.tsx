@@ -3,6 +3,8 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import Button from "@/global-components/ui/Button";
+import Notice from "@/global-components/ui/Notice";
+import WorkflowSteps from "../WorkflowSteps";
 import SearchKeycloak from "./stages/SearchKeycloak";
 import VerifyIdentity from "./stages/VerifyIdentity";
 import CreateProfile from "./stages/CreateProfile";
@@ -20,33 +22,7 @@ export default function Joiners() {
 
   return (
     <div className="vertical-layout__outer">
-      <div className="text-style__small-text flex items-center gap-1">
-        {joinerStageOrder.map((stage, i) => (
-          <div key={stage} className={`flex items-center gap-1`}>
-            {i !== 0 && <hr className={`w-6 border-(--terciary-grey)`} />}
-            <div
-              className={`w-6 h-6 rounded-full font-bold text-center grid items-center justify-center ${
-                state.currentStage === stage
-                  ? "bg-(--secondary-blue) text-white"
-                  : workflow.currentStageIndex > i
-                    ? "bg-(--secondary-green) text-white"
-                    : "border border-(--terciary-grey)  text-(--primary-grey)"
-              }`}
-            >
-              {workflow.currentStageIndex < i + 1 ? (
-                i + 1
-              ) : (
-                <FontAwesomeIcon icon={["fas", "check"]} />
-              )}
-            </div>
-            <div
-              className={`${state.currentStage === stage ? "text-(--secondary-blue)" : "text-(--primary-grey)"}`}
-            >
-              {stage}
-            </div>
-          </div>
-        ))}
-      </div>
+      <WorkflowSteps stages={joinerStageOrder} currentStage={state.currentStage} />
 
       <div className="feature-container-vertical">
         <div className="text-style__big-text border-b border-(--terciary-grey) pb-2.5">
@@ -63,15 +39,11 @@ export default function Joiners() {
         {state.currentStage === "Review & Activate" && <ReviewAndActivate />}
 
         {state.error && (
-          <div className="rounded-[10px] border border-(--primary-red)/30 bg-(--primary-red)/10 p-3 text-style__small-text text-(--primary-red)">
-            {state.error}
-          </div>
+          <Notice tone="danger">{state.error}</Notice>
         )}
 
         {state.successMessage && (
-          <div className="rounded-[10px] border border-(--primary-green)/30 bg-(--primary-green)/10 p-3 text-style__small-text text-(--primary-green)">
-            {state.successMessage}
-          </div>
+          <Notice tone="success">{state.successMessage}</Notice>
         )}
 
         <div className="horizontal-layout justify-between border-t border-(--terciary-grey) pt-2.5">

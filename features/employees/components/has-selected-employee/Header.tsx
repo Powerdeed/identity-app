@@ -3,7 +3,9 @@
 import { getInitials } from "@/global-components/layout/nav";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+import { hasPermission, PERMISSIONS } from "@/app/auth";
 import Button from "@/global-components/ui/Button";
+import { useGlobals } from "@/globals";
 
 import useEmployees from "../../hooks/useEmployees";
 import useEmployeeStatusActions from "../../hooks/useEmployeeStatusActions";
@@ -24,6 +26,7 @@ const getHeaderAction = (status: EmployeeStatus) => {
 };
 
 export default function Header() {
+  const { globalStates } = useGlobals();
   const { state } = useEmployees();
   const { changeStatus } = useEmployeeStatusActions();
 
@@ -32,6 +35,9 @@ export default function Header() {
   ) ?? state.selectedEmployee;
   const status: EmployeeStatus = employee?.status ?? "unset";
   const headerAction = getHeaderAction(status);
+  const canManageLifecycle =
+    hasPermission(globalStates.user, PERMISSIONS.IDENTITY_USERS_MANAGE) ||
+    hasPermission(globalStates.user, PERMISSIONS.IDENTITY_JML_MANAGE);
   const department =
     employee?.employment?.departmentId ?? employee?.profile?.department ?? "No department";
   const title =
@@ -83,7 +89,7 @@ export default function Header() {
             </div>
           </div>
 
-          {headerAction ? (
+          {headerAction && canManageLifecycle ? (
             <Button
               buttonType={status === "active" ? "light" : "primary"}
               buttonText={headerAction.action}

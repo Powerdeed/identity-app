@@ -1,8 +1,8 @@
 "use client";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { formatLabel } from "@/features/employees/utils/formatLabel";
 import { getDateFormatted } from "@/global-components/layout/date";
+import Notice from "@/global-components/ui/Notice";
 import { getMoveReasonLabel } from "../../../constants/MOVE_REASONS";
 import useMoverWorkflow from "../../../hooks/useMoverWorkflow";
 
@@ -33,9 +33,8 @@ export default function ConfirmMove() {
 
   return (
     <div className="vertical-layout__outer">
-      <div className="horizontal-layout p-2.5 border border-(--secondary-green) bg-(--secondary-green)/10 text-(--secondary-green) rounded-[10px]">
-        <FontAwesomeIcon icon={["fas", "check-circle"]} />
-        <div className="text-style__small-text">
+      <Notice tone="success">
+        <div>
           <div className="text-(--primary-green)">
             Ready to apply move for {employee?.name}
           </div>
@@ -44,7 +43,7 @@ export default function ConfirmMove() {
             active sessions will be revoked.
           </div>
         </div>
-      </div>
+      </Notice>
 
       <div className="feature-container-vertical">
         {Object.entries(details).map(([label, value], index, entries) => (
@@ -64,14 +63,11 @@ export default function ConfirmMove() {
         ))}
       </div>
 
-      <div className="horizontal-layout p-2.5 text-style__small-text border border-(--primary-yellow) bg-(--primary-yellow-faded)/10 text-(--primary-yellow) rounded-[10px]">
-        <FontAwesomeIcon icon={["fas", "exclamation-triangle"]} />
-        <div>
-          This operation writes a permanent audit event. It updates employment
-          and revokes sessions immediately; access assignments remain unchanged
-          pending review.
-        </div>
-      </div>
+      <Notice tone="warning">
+        This operation writes a permanent audit event. It updates employment
+        and revokes sessions immediately; access assignments remain unchanged
+        pending review.
+      </Notice>
     </div>
   );
 }

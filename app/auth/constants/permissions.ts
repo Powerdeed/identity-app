@@ -13,6 +13,7 @@ export const PERMISSIONS = {
   IDENTITY_SECURITY_READ: "identity.security.read",
   IDENTITY_SECURITY_MANAGE: "identity.security.manage",
   IDENTITY_ACCESS_REVIEWS_READ: "identity.access-reviews.read",
+  IDENTITY_ACCESS_REVIEWS_MANAGE: "identity.access-reviews.manage",
   IDENTITY_POLICIES_READ: "identity.policies.read",
   IDENTITY_POLICIES_MANAGE: "identity.policies.manage",
   IDENTITY_SETTINGS_READ: "identity.settings.read",

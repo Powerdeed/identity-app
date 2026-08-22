@@ -1,8 +1,8 @@
 "use client";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { formatLabel } from "@/features/employees/utils/formatLabel";
 import { getDateFormatted } from "@/global-components/layout/date";
+import Notice from "@/global-components/ui/Notice";
 import { getMoveReasonLabel } from "../../../constants/MOVE_REASONS";
 import useMoverWorkflow from "../../../hooks/useMoverWorkflow";
 
@@ -13,14 +13,11 @@ export default function PreviewImpact() {
 
   return (
     <div className="vertical-layout__outer text-left">
-      <div className="horizontal-layout p-2.5 border border-(--secondary-blue) bg-(--secondary-blue)/10 text-(--secondary-blue) rounded-[10px]">
-        <FontAwesomeIcon icon={["fas", "info-circle"]} />
-        <div className="text-style__small-text">
-          Review the employment changes and current access before continuing.
-          Active sessions will be revoked so the employee receives a fresh
-          entitlement snapshot on the next login.
-        </div>
-      </div>
+      <Notice tone="info">
+        Review the employment changes and current access before continuing.
+        Active sessions will be revoked so the employee receives a fresh
+        entitlement snapshot on the next login.
+      </Notice>
 
       <div className="feature-container-vertical">
         <div className="w-full text-style__body--bold">Move Record</div>
@@ -118,12 +115,9 @@ export default function PreviewImpact() {
           )}
         </div>
 
-        <div className="horizontal-layout p-2.5 text-style__small-text border border-(--primary-red) bg-(--primary-red-faded)/10 text-(--primary-red) rounded-[10px]">
-          <FontAwesomeIcon icon={["fas", "exclamation-triangle"]} />
-          <div>
-            All active Powerdeed sessions will be revoked on confirmation.
-          </div>
-        </div>
+        <Notice tone="danger">
+          All active Powerdeed sessions will be revoked on confirmation.
+        </Notice>
       </div>
     </div>
   );

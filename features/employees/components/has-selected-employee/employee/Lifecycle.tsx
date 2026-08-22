@@ -1,5 +1,6 @@
 "use client";
 
+import { hasPermission, PERMISSIONS } from "@/app/auth";
 import {
   LIFECYCLE_STATUSES,
   LifecycleStatus,
@@ -8,6 +9,8 @@ import useEmployees from "@/features/employees/hooks/useEmployees";
 import useEmployeeStatusActions from "@/features/employees/hooks/useEmployeeStatusActions";
 import Button from "@/global-components/ui/Button";
 import ContainerTitle from "@/global-components/ui/ContainerTitle";
+import Notice from "@/global-components/ui/Notice";
+import { useGlobals } from "@/globals";
 import { useEffect, useState } from "react";
 
 const toLifecycleStatus = (status?: string): LifecycleStatus => {
@@ -25,6 +28,7 @@ const toLifecycleStatus = (status?: string): LifecycleStatus => {
 };
 
 export default function Lifecycle() {
+  const { globalStates } = useGlobals();
   const { state } = useEmployees();
   const { changeStatus } = useEmployeeStatusActions();
   const employee = state.selectedEmployee;
@@ -41,6 +45,10 @@ export default function Lifecycle() {
   }, [employeeStatus]);
 
   if (!employee) return null;
+
+  const canManageLifecycle =
+    hasPermission(globalStates.user, PERMISSIONS.IDENTITY_USERS_MANAGE) ||
+    hasPermission(globalStates.user, PERMISSIONS.IDENTITY_JML_MANAGE);
 
   return (
     <div className="vertical-layout__outer">
@@ -72,6 +80,14 @@ export default function Lifecycle() {
       <div className="feature-container-vertical">
         <ContainerTitle title="Lifecycle Actions" />
 
+        {!canManageLifecycle ? (
+          <Notice tone="info">
+            You can review this lifecycle state, but managing activation,
+            suspension, or archival requires identity user or JML management
+            permission.
+          </Notice>
+        ) : null}
+
         <div className="p-2.5 md:p-5 flex justify-between gap-2.5 md:gap-5 bg-(--primary-yellow-faded)/30 border border-(--primary-yellow) rounded-[10px] text-(--primary-red)">
           <div>
             <div className="text-style__body--bold">Suspend Account</div>
@@ -85,7 +101,9 @@ export default function Lifecycle() {
               buttonText="Suspend"
               buttonType="red"
               disabled={
-                state.fetchingEmployeeData || employee.status === "suspended"
+                !canManageLifecycle ||
+                state.fetchingEmployeeData ||
+                employee.status === "suspended"
               }
               clickAction={() =>
                 changeStatus(
@@ -110,7 +128,9 @@ export default function Lifecycle() {
               buttonText="Archive"
               buttonType="red"
               disabled={
-                state.fetchingEmployeeData || employee.status === "archived"
+                !canManageLifecycle ||
+                state.fetchingEmployeeData ||
+                employee.status === "archived"
               }
               clickAction={() =>
                 changeStatus(
@@ -133,7 +153,11 @@ export default function Lifecycle() {
           <div>
             <Button
               buttonText="Activate"
-              disabled={state.fetchingEmployeeData || employee.status === "active"}
+              disabled={
+                !canManageLifecycle ||
+                state.fetchingEmployeeData ||
+                employee.status === "active"
+              }
               clickAction={() =>
                 changeStatus(
                   "activate",

@@ -21,3 +21,14 @@ export const moverStages = [
 export type CurrentMoverStage = (typeof moverStages)[number];
 
 export const moverStageOrder: readonly CurrentMoverStage[] = moverStages;
+
+export const leaverStages = [
+  "Select Person",
+  "Specify Exit",
+  "Preview Impact",
+  "Confirm Offboarding",
+] as const;
+
+export type CurrentLeaverStage = (typeof leaverStages)[number];
+
+export const leaverStageOrder: readonly CurrentLeaverStage[] = leaverStages;

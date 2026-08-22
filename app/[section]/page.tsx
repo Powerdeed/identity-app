@@ -5,9 +5,10 @@ import { use } from "react";
 
 // utils
 import { convertLinkToLabel, useGlobals } from "@globals";
+import { hasPermission } from "@app/auth";
 
 // constants
-import { MenuLabels } from "@lib/constants/NAV_MENU_AND_LABELS";
+import { MenuLabels, menuItems } from "@lib/constants/NAV_MENU_AND_LABELS";
 
 // features
 
@@ -42,12 +43,29 @@ export default function Section({
   };
 
   const content = sectionMap[sectionLabel];
+  const menuItem = menuItems.find((item) => item.label === sectionLabel);
+  const canViewSection = menuItem
+    ? hasPermission(globalStates.user, menuItem.requiredPermission)
+    : false;
 
   return (
     <div
       className={`page-with-panels min-w-0 max-w-full overflow-x-hidden pt-15 ${globalStates.sideBarOpen ? "pl-65" : "pl-15"}`}
     >
-      {content}
+      {!content ? (
+        <div className="uniform-page-display text-style__body">
+          <h1 className="text-style__page-title">Page not found</h1>
+        </div>
+      ) : canViewSection ? (
+        content
+      ) : (
+        <div className="uniform-page-display text-style__body">
+          <h1 className="text-style__page-title">Access denied</h1>
+          <p className="text-(--primary-grey)">
+            You do not have permission to view this section.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

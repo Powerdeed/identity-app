@@ -17,6 +17,10 @@ export default function useJMLWorkflow() {
   const currentStageIndex = joinerStageOrder.indexOf(state.currentStage);
   const isFirstStage = currentStageIndex === 0;
   const isLastStage = currentStageIndex === joinerStageOrder.length - 1;
+  const employmentIsIncomplete =
+    !state.employment.departmentId ||
+    !state.employment.jobProfileId ||
+    !state.employment.startDate;
 
   const navigate = (offset: -1 | 1) => {
     const stage = joinerStageOrder[currentStageIndex + offset];
@@ -134,6 +138,7 @@ export default function useJMLWorkflow() {
       state.isLoadingAccess ||
       (state.currentStage === "Search Keycloak" &&
         !state.selectedKeycloakUser) ||
+      (state.currentStage === "Employment" && employmentIsIncomplete) ||
       (isLastStage && state.provisionedUser?.status === "active"),
     goBack: () => navigate(-1),
     performPrimaryAction,
