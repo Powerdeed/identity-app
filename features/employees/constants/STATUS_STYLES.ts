@@ -1,14 +1,15 @@
 import { EmployeeStatus } from "../types/employeesTypes";
 
+const GREY_STATUS_STYLE =
+  "border-(--primary-grey-faded) bg-(--secondary-grey)/10 text-(--primary-grey)";
+
 export const STATUS_STYLES: Record<EmployeeStatus, string> = {
   active:
-    "border-(--primary-green)/50 bg-(--primary-green)/10 text-(--primary-blue) text-(--primary-green)",
+    "border-(--primary-green-faded) bg-(--secondary-green)/10 text-(--primary-green)",
   pending:
-    "border-(--primary-yellow)/70 bg-(--primary-yellow)/15 text-(--primary-blue) text-(--primary-yellow)",
+    "border-(--primary-yellow-faded) bg-(--secondary-yellow)/10 text-(--primary-yellow)",
   suspended:
-    "border-(--primary-red)/30 bg-(--primary-red)/10 text-(--primary-red) text-(--primary-red)",
-  archived:
-    "border-(--secondary-grey) bg-(--terciary-grey)/25 text-(--primary-grey) text-(--primary-grey)",
-  unset:
-    "border-(--secondary-grey) bg-(--terciary-grey)/25 text-(--primary-grey) text-(--primary-grey)",
+    "border-(--primary-red-faded) bg-(--secondary-red)/10 text-(--primary-red)",
+  archived: GREY_STATUS_STYLE,
+  unset: GREY_STATUS_STYLE,
 };

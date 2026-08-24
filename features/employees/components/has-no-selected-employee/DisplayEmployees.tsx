@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import useEmployees from "../../hooks/useEmployees";
 import useEmployeesDirectory from "../../hooks/useEmployeesDirectory";
 import { createEmployeeTableColumns } from "./employeesTableColumns";
@@ -8,11 +8,6 @@ import { SectionTitle } from "@/global-components/ui/Title";
 import Button from "@/global-components/ui/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import SearchFilterSort from "./SearchFilterSort";
-import type {
-  DepartmentFilter,
-  EmployeeSortOption,
-  StatusFilter,
-} from "../../constants/EMPLOYEE_DIRECTORY";
 import DataTable from "@/global-components/ui/DataTable";
 import { PAGE_META_DATA } from "../../constants/PAGE_META_DATA";
 import {
@@ -20,20 +15,26 @@ import {
   sortEmployees,
   toEmployeeTableRow,
 } from "../../utils/employeeDirectory";
+import Dotindicator from "@/global-components/ui/Dotindicator";
 
 const employeeTableColumns = createEmployeeTableColumns();
 
 export default function DisplayEmployees() {
   const { state } = useEmployees();
   const directory = useEmployeesDirectory();
-  const [searchValue, setSearchValue] = useState("");
-  const [showProvisionNotice, setShowProvisionNotice] = useState(false);
-  const [statusFilter, setStatusFilter] =
-    useState<StatusFilter>("All statuses");
-  const [departmentFilter, setDepartmentFilter] =
-    useState<DepartmentFilter>("All Departments");
-  const [sortOption, setSortOption] =
-    useState<EmployeeSortOption>("Default order");
+
+  const {
+    departmentFilter,
+    searchValue,
+    setDepartmentFilter,
+    setSearchValue,
+    setShowProvisionNotice,
+    setSortOption,
+    setStatusFilter,
+    showProvisionNotice,
+    sortOption,
+    statusFilter,
+  } = state;
 
   const filteredEmployees = useMemo(
     () =>
@@ -45,6 +46,7 @@ export default function DisplayEmployees() {
       }),
     [departmentFilter, searchValue, state.employees, statusFilter, sortOption],
   );
+
   const visibleEmployees = useMemo(
     () =>
       sortEmployees(filteredEmployees, sortOption)
@@ -93,42 +95,7 @@ export default function DisplayEmployees() {
         onSortChange={(value) => updateCriteria(setSortOption, value)}
       />
 
-      {showProvisionNotice ? (
-        <div
-          className="overlay"
-          onClick={() => setShowProvisionNotice(false)}
-        >
-          <div
-            className="w-full max-w-xl rounded-[10px] border border-(--terciary-grey) bg-white p-5 shadow-xl"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="mb-4 flex items-start gap-3">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-(--secondary-blue)/15 text-(--secondary-blue)">
-                <FontAwesomeIcon icon={["fas", "user-plus"]} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-style__big-text text-(--primary-blue)">
-                  Provisioning flow
-                </div>
-                <div className="mt-1 text-style__small-text text-(--primary-grey)">
-                  Employee provisioning is backed by Keycloak user search and
-                  identity-service profile creation. Use this once the dedicated
-                  provisioning picker is connected; existing employees can be
-                  managed from the workforce directory.
-                </div>
-              </div>
-              <button
-                type="button"
-                aria-label="Close provisioning notice"
-                className="buttonize rounded-[10px] p-2.5 text-(--primary-grey) hover:bg-(--terciary-grey)/30 hover:text-(--primary-blue)"
-                onClick={() => setShowProvisionNotice(false)}
-              >
-                <FontAwesomeIcon icon={["fas", "xmark"]} />
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {showProvisionNotice && <ProvisioningNotice />}
 
       <DataTable
         title="Workforce directory"
@@ -139,7 +106,7 @@ export default function DisplayEmployees() {
         }
         headerAside={
           <div className="flex items-center gap-2 text-style__small-text text-(--primary-grey)">
-            <span className="h-2 w-2 rounded-full bg-(--primary-green)" />
+            <Dotindicator color="bg-(--primary-green)" />
             Identity data
           </div>
         }
@@ -174,6 +141,46 @@ export default function DisplayEmployees() {
           </div>
         }
       />
+    </div>
+  );
+}
+
+function ProvisioningNotice() {
+  const { state } = useEmployees();
+
+  const { setShowProvisionNotice } = state;
+
+  return (
+    <div className="overlay" onClick={() => setShowProvisionNotice(false)}>
+      <div
+        className="w-full max-w-xl rounded-[10px] border border-(--terciary-grey) bg-white p-5 shadow-xl"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="mb-4 flex items-start gap-3">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-(--secondary-blue)/15 text-(--secondary-blue)">
+            <FontAwesomeIcon icon={["fas", "user-plus"]} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-style__big-text text-(--primary-blue)">
+              Provisioning flow
+            </div>
+            <div className="mt-1 text-style__small-text text-(--primary-grey)">
+              Employee provisioning is backed by Keycloak user search and
+              identity-service profile creation. Use this once the dedicated
+              provisioning picker is connected; existing employees can be
+              managed from the workforce directory.
+            </div>
+          </div>
+          <button
+            type="button"
+            aria-label="Close provisioning notice"
+            className="buttonize rounded-[10px] p-2.5 text-(--primary-grey) hover:bg-(--terciary-grey)/30 hover:text-(--primary-blue)"
+            onClick={() => setShowProvisionNotice(false)}
+          >
+            <FontAwesomeIcon icon={["fas", "xmark"]} />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

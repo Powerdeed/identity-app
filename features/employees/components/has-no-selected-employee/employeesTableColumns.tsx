@@ -52,7 +52,7 @@ export const createEmployeeTableColumns = (
     header: "Status",
     cell: (employee) => (
       <span
-        className={`inline-flex rounded-[10px] border px-2 py-1 ${STATUS_STYLES[employee.status]}`}
+        className={`inline-flex rounded-[10px] border px-1 py-0.5 ${STATUS_STYLES[employee.status]}`}
       >
         {formatLabel(employee.status)}
       </span>

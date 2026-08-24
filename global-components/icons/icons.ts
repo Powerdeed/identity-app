@@ -35,6 +35,7 @@ import {
   faInfoCircle,
   faUnlock,
   faPlus,
+  faPen,
 } from "@fortawesome/free-solid-svg-icons";
 
 import {
@@ -94,4 +95,5 @@ library.add(
   faCalendar,
   faUnlock,
   faPlus,
+  faPen,
 );

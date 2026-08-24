@@ -144,27 +144,26 @@ export default function DataTable<T>({
         </table>
       </div>
 
-      {data.length === 0
-        ? (emptyState ?? (
-            <div className="grid min-h-44 place-items-center px-5 py-10 text-center">
-              <div>
-                <div className="text-style__body--bold text-(--primary-blue)">
-                  No records found
-                </div>
-
-                <p className="mt-1 text-style__small-text text-(--primary-grey)">
-                  There is no data available for this table.
-                </p>
+      {data.length === 0 &&
+        (emptyState ?? (
+          <div className="grid min-h-44 place-items-center px-5 py-10 text-center">
+            <div>
+              <div className="text-style__body--bold text-(--primary-blue)">
+                No records found
               </div>
-            </div>
-          ))
-        : null}
 
-      {pagination ? (
+              <p className="mt-1 text-style__small-text text-(--primary-grey)">
+                There is no data available for this table.
+              </p>
+            </div>
+          </div>
+        ))}
+
+      {pagination && (
         <div className="border-t border-(--terciary-grey) px-4 py-3">
           <Pagination {...pagination} />
         </div>
-      ) : null}
+      )}
     </section>
   );
 }

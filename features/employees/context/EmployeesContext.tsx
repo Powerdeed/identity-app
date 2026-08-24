@@ -1,7 +1,12 @@
 "use client";
 
 import { Dispatch, SetStateAction, createContext } from "react";
-import { User } from "@/app/auth";
+import { User } from "@app/auth";
+import {
+  DepartmentFilter,
+  EmployeeSortOption,
+  StatusFilter,
+} from "../constants/EMPLOYEE_DIRECTORY";
 
 type EmployeesContextValue = {
   employees: User[];
@@ -14,6 +19,16 @@ type EmployeesContextValue = {
   setFetchingEmployees: Dispatch<SetStateAction<boolean>>;
   fetchingEmployeesError: string;
   setFetchingEmployeesError: Dispatch<SetStateAction<string>>;
+  searchValue: string;
+  setSearchValue: Dispatch<SetStateAction<string>>;
+  showProvisionNotice: boolean;
+  setShowProvisionNotice: Dispatch<SetStateAction<boolean>>;
+  statusFilter: StatusFilter;
+  setStatusFilter: Dispatch<SetStateAction<StatusFilter>>;
+  departmentFilter: DepartmentFilter;
+  setDepartmentFilter: Dispatch<SetStateAction<DepartmentFilter>>;
+  sortOption: EmployeeSortOption;
+  setSortOption: Dispatch<SetStateAction<EmployeeSortOption>>;
 };
 
 export const employeesContext = createContext<EmployeesContextValue | null>(

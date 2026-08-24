@@ -4,13 +4,14 @@ import { ReactNode, useState } from "react";
 import { employeesContext } from "./EmployeesContext";
 import { employeeContext } from "./EmployeeContext";
 import type { EmployeeMenu } from "../constants/EMPLOYEE_NAV_MENU";
-import {
-  User,
-  UserSession,
-  UserPermission,
-} from "@/app/auth";
+import { User, UserSession, UserPermission } from "@app/auth";
 import { AuditEvent } from "../types/audit.types";
 import type { EmploymentDetails } from "../types/employeesTypes";
+import {
+  DepartmentFilter,
+  EmployeeSortOption,
+  StatusFilter,
+} from "../constants/EMPLOYEE_DIRECTORY";
 
 export default function EmployeesProvider({
   children,
@@ -45,6 +46,16 @@ export default function EmployeesProvider({
   const [fetchingPermissions, setFetchingPermissions] = useState(false);
   const [fetchingPermissionsError, setFetchingPermissionsError] = useState("");
 
+  // Search, sort and filter
+  const [searchValue, setSearchValue] = useState("");
+  const [showProvisionNotice, setShowProvisionNotice] = useState(false);
+  const [statusFilter, setStatusFilter] =
+    useState<StatusFilter>("All statuses");
+  const [departmentFilter, setDepartmentFilter] =
+    useState<DepartmentFilter>("All Departments");
+  const [sortOption, setSortOption] =
+    useState<EmployeeSortOption>("Default order");
+
   return (
     <employeesContext.Provider
       value={{
@@ -58,6 +69,16 @@ export default function EmployeesProvider({
         setFetchingEmployees,
         fetchingEmployeesError,
         setFetchingEmployeesError,
+        searchValue,
+        setSearchValue,
+        showProvisionNotice,
+        setShowProvisionNotice,
+        statusFilter,
+        setStatusFilter,
+        departmentFilter,
+        setDepartmentFilter,
+        sortOption,
+        setSortOption,
       }}
     >
       <employeeContext.Provider
