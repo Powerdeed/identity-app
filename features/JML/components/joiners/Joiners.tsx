@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import Button from "@/global-components/ui/Button";
 import Notice from "@/global-components/ui/Notice";
-import WorkflowSteps from "../WorkflowSteps";
+import WorkflowSteps from "../../../../global-components/ui/WorkflowSteps";
 import SearchKeycloak from "./stages/SearchKeycloak";
 import VerifyIdentity from "./stages/VerifyIdentity";
 import CreateProfile from "./stages/CreateProfile";
@@ -22,7 +22,10 @@ export default function Joiners() {
 
   return (
     <div className="vertical-layout__outer">
-      <WorkflowSteps stages={joinerStageOrder} currentStage={state.currentStage} />
+      <WorkflowSteps
+        stages={joinerStageOrder}
+        currentStage={state.currentStage}
+      />
 
       <div className="feature-container-vertical">
         <div className="text-style__big-text border-b border-(--terciary-grey) pb-2.5">
@@ -38,9 +41,7 @@ export default function Joiners() {
         {state.currentStage === "Assign Access" && <AssignAccess />}
         {state.currentStage === "Review & Activate" && <ReviewAndActivate />}
 
-        {state.error && (
-          <Notice tone="danger">{state.error}</Notice>
-        )}
+        {state.error && <Notice tone="danger">{state.error}</Notice>}
 
         {state.successMessage && (
           <Notice tone="success">{state.successMessage}</Notice>

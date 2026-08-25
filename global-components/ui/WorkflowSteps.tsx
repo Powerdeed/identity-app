@@ -5,9 +5,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 export default function WorkflowSteps<TStage extends string>({
   stages,
   currentStage,
+  isFlowing = true,
 }: {
   stages: readonly TStage[];
   currentStage: TStage;
+  isFlowing?: boolean;
 }) {
   const currentStageIndex = stages.indexOf(currentStage);
 
@@ -20,16 +22,21 @@ export default function WorkflowSteps<TStage extends string>({
             className={`w-6 h-6 rounded-full font-bold text-center grid items-center justify-center ${
               currentStage === stage
                 ? "bg-(--secondary-blue) text-white"
-                : currentStageIndex > index
+                : isFlowing && currentStageIndex > index
                   ? "bg-(--secondary-green) text-white"
                   : "border border-(--terciary-grey) text-(--primary-grey)"
             }`}
           >
-            {currentStageIndex <= index ? (
-              index + 1
-            ) : (
+            {/* Show next/current step(s) */}
+            {currentStageIndex <= index && index + 1}
+
+            {/* Show previous steps as checked */}
+            {isFlowing && currentStageIndex > index && (
               <FontAwesomeIcon icon={["fas", "check"]} />
             )}
+
+            {/* Show previous steps normally */}
+            {!isFlowing && currentStageIndex > index && index + 1}
           </div>
           <div
             className={

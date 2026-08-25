@@ -7,7 +7,7 @@ import Notice from "@/global-components/ui/Notice";
 import { getInitials } from "@/global-components/layout/nav";
 import { getRandomClassNameColor } from "@/globals";
 import useLeaverWorkflow from "../../hooks/useLeaverWorkflow";
-import WorkflowSteps from "../WorkflowSteps";
+import WorkflowSteps from "../../../../global-components/ui/WorkflowSteps";
 import ConfirmOffboarding from "./stages/ConfirmOffboarding";
 import PreviewImpact from "./stages/PreviewImpact";
 import SelectPerson from "./stages/SelectPerson";

@@ -7,7 +7,7 @@ import Button from "@/global-components/ui/Button";
 import Notice from "@/global-components/ui/Notice";
 import { getRandomClassNameColor } from "@/globals";
 import useMoverWorkflow from "../../hooks/useMoverWorkflow";
-import WorkflowSteps from "../WorkflowSteps";
+import WorkflowSteps from "../../../../global-components/ui/WorkflowSteps";
 import ConfirmMove from "./stages/ConfirmMove";
 import PreviewImpact from "./stages/PreviewImpact";
 import SelectPerson from "./stages/SelectPerson";
@@ -19,7 +19,10 @@ export default function Movers() {
 
   return (
     <div className="vertical-layout__outer">
-      <WorkflowSteps stages={moverStageOrder} currentStage={workflow.currentStage} />
+      <WorkflowSteps
+        stages={moverStageOrder}
+        currentStage={workflow.currentStage}
+      />
 
       <div className="feature-container-vertical">
         <div className="horizontal-layout justify-between text-style__big-text border-b border-(--terciary-grey) pb-2.5">
@@ -46,9 +49,7 @@ export default function Movers() {
         {workflow.currentStage === "Preview Impact" && <PreviewImpact />}
         {workflow.currentStage === "Confirm Move" && <ConfirmMove />}
 
-        {workflow.error && (
-          <Notice tone="danger">{workflow.error}</Notice>
-        )}
+        {workflow.error && <Notice tone="danger">{workflow.error}</Notice>}
 
         {workflow.successMessage && (
           <Notice tone="success">{workflow.successMessage}</Notice>
@@ -59,7 +60,9 @@ export default function Movers() {
             buttonType="light"
             buttonText="Back"
             disabled={
-              workflow.isFirstStage || workflow.isProcessing || Boolean(workflow.result)
+              workflow.isFirstStage ||
+              workflow.isProcessing ||
+              Boolean(workflow.result)
             }
             icon={<FontAwesomeIcon icon={["fas", "angle-left"]} />}
             clickAction={workflow.goBack}

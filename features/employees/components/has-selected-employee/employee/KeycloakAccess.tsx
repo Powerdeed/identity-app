@@ -75,7 +75,9 @@ export default function KeycloakAccess() {
     ),
   });
 
-  const roleColumns = <T extends { name: string; description?: string; assigned: boolean }>(
+  const rolePickerColumns = <
+    T extends { name: string; description?: string; assigned: boolean },
+  >(
     onAdd: (row: T) => void,
   ): DataTableColumn<T>[] => [
     {
@@ -94,6 +96,38 @@ export default function KeycloakAccess() {
       cellClassName: "text-(--primary-grey)",
     },
     actionColumn({ onAdd }),
+  ];
+
+  const roleColumns = <
+    T extends { id: string; clientId: string; role: string },
+  >(
+    onRemove: (role: (typeof clientRoleList)[number]) => void,
+  ): DataTableColumn<T>[] => [
+    {
+      id: "name",
+      header: "Role",
+      cellClassName: "text-(--primary-green)",
+      accessorKey: "role",
+    },
+    {
+      id: "client",
+      header: "Client",
+      cellClassName: "text-(--primary-grey)",
+      accessorKey: "clientId",
+    },
+    {
+      id: "removeAction",
+      header: "",
+      cellClassName: "text-(--primary-grey)",
+      cell: () =>
+        canManageKeycloakAccess ? (
+          <FontAwesomeIcon
+            icon={["fas", "xmark"]}
+            className="buttonize text-style__small-text p-1.5 rounded-[10px] text-(--primary-grey) hover:bg-(--primary-red)/10 hover:text-(--primary-red)"
+            onClick={() => onRemove}
+          />
+        ) : null,
+    },
   ];
 
   return (
@@ -214,53 +248,51 @@ export default function KeycloakAccess() {
       </div>
 
       {/* Client Roles */}
-      <div className="feature-container-vertical">
-        <ContainerTitle
-          title="Client Roles"
-          el={
-            canManageKeycloakAccess ? (
-              <Button
-                buttonText="Add Client Role"
-                icon={<FontAwesomeIcon icon={["fas", "plus"]} />}
-                clickAction={() => openPicker("client-role")}
-              />
-            ) : null
-          }
-        />
 
-        {clientRoleList.map((clientRole, i) => (
-          <div
-            key={clientRole.id}
-            className={`${i !== clientRoleList.length - 1 ? "border-b border-(--terciary-grey) pb-2.5" : ""} horizontal-layout justify-between`}
-          >
-            <div>
-              <div className="text-(--primary-green)">{clientRole.role}</div>
-              <div className="text-style__small-text text-(--primary-grey)">
-                {clientRole.clientId}
-              </div>
-            </div>
-            {canManageKeycloakAccess ? (
-              <FontAwesomeIcon
-                icon={["fas", "xmark"]}
-                className="buttonize text-style__small-text p-1.5 rounded-[10px] text-(--primary-grey) hover:bg-(--primary-red)/10 hover:text-(--primary-red)"
-                onClick={() =>
-                  setRemovalTarget({
-                    type: "client-role",
-                    clientId: clientRole.clientId,
-                    name: clientRole.role,
-                  })
-                }
-              />
-            ) : null}
-          </div>
-        ))}
-
-        {!clientRoleList.length && (
-          <div className="text-style__small-text text-(--primary-grey)">
-            No direct client roles assigned.
-          </div>
+      <DataTable
+        title="Assigned Client Roles"
+        description={`${clientRoleList.length} roles`}
+        headerAside={
+          canManageKeycloakAccess ? (
+            <Button
+              buttonText="Add Client Role"
+              icon={<FontAwesomeIcon icon={["fas", "plus"]} />}
+              clickAction={() => openPicker("client-role")}
+            />
+          ) : null
+        }
+        search={{
+          value: search,
+          onChange: (value) => {
+            setSearch(value);
+            setPickerPage(1);
+          },
+          placeholder: "Search client roles",
+        }}
+        columns={roleColumns<(typeof clientRoleList)[number]>(
+          (role: (typeof clientRoleList)[number]) =>
+            setRemovalTarget({
+              type: "client-role",
+              clientId: role.clientId,
+              name: role.role,
+            }),
         )}
-      </div>
+        data={paginate(clientRoleList, pickerPage)}
+        getRowId={(role) => role.id}
+        pagination={{
+          currentPage: pickerPage,
+          pageSize,
+          totalItems: clientRoleList.length,
+          onPageChange: setPickerPage,
+          onPageSizeChange: () => undefined,
+        }}
+      />
+
+      {!clientRoleList.length && (
+        <div className="text-style__small-text text-(--primary-grey)">
+          No direct client roles assigned.
+        </div>
+      )}
 
       {canManageKeycloakAccess && pickerMode && (
         <div className="overlay" onClick={closePicker}>
@@ -338,7 +370,7 @@ export default function KeycloakAccess() {
                   columns={[
                     { id: "name", header: "Group", accessorKey: "name" },
                     { id: "path", header: "Path", accessorKey: "path" },
-                    actionColumn<typeof groupRows[number]>({
+                    actionColumn<(typeof groupRows)[number]>({
                       onAdd: (group) => addGroup(group.id),
                     }),
                   ]}
@@ -364,8 +396,8 @@ export default function KeycloakAccess() {
                     },
                     placeholder: "Search realm roles",
                   }}
-                  columns={roleColumns<typeof realmRoleRows[number]>((role) =>
-                    addRealmRole(role.name),
+                  columns={rolePickerColumns<(typeof realmRoleRows)[number]>(
+                    (role) => addRealmRole(role.name),
                   )}
                   data={paginate(realmRoleRows, pickerPage)}
                   getRowId={(role) => role.id}
@@ -389,8 +421,8 @@ export default function KeycloakAccess() {
                     },
                     placeholder: "Search client roles",
                   }}
-                  columns={roleColumns<typeof clientRoleRows[number]>((role) =>
-                    addClientRole(role.name),
+                  columns={rolePickerColumns<(typeof clientRoleRows)[number]>(
+                    (role) => addClientRole(role.name),
                   )}
                   data={paginate(clientRoleRows, pickerPage)}
                   getRowId={(role) => role.id}

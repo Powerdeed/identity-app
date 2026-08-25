@@ -5,6 +5,7 @@ import DataTable, {
   type DataTableColumn,
 } from "@/global-components/ui/DataTable";
 import { useState } from "react";
+import Dotindicator from "@/global-components/ui/Dotindicator";
 
 export type UserActivityCategory =
   | "Lifecycle"
@@ -94,7 +95,7 @@ export default function UserActivities({
       headerAside={
         representative ? (
           <div className="flex items-center gap-2 text-style__small-text text-(--primary-grey)">
-            <span className="h-2 w-2 rounded-full bg-(--primary-yellow)" />
+            <Dotindicator color="bg-(--primary-yellow)" />
             Representative data
           </div>
         ) : null

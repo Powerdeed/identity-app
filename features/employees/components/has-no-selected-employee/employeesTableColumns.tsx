@@ -124,7 +124,7 @@ export const createEmployeeTableColumns = (
         className="grid h-8 w-8 place-items-center rounded-[10px] text-(--primary-grey) duration-150 enabled:hover:bg-(--terciary-grey)/30 enabled:hover:text-(--primary-blue)"
         onClick={() => onSelect?.(employee)}
       >
-        <FontAwesomeIcon icon={["fas", "ellipsis"]} />
+        <FontAwesomeIcon icon={["fas", "pen"]} />
       </button>
     ),
   },
