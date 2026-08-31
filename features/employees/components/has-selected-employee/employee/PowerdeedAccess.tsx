@@ -11,6 +11,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Button from "@/global-components/ui/Button";
 import { formatLabel } from "@/features/employees/utils/formatLabel";
 import { useGlobals } from "@/globals";
+import Loader from "@/global-components/ui/Loader";
 
 export default function PowerdeedAccess() {
   const { globalStates } = useGlobals();
@@ -69,10 +70,7 @@ export default function PowerdeedAccess() {
       />
 
       {canManageAccess && state.isPermissionsRegistryOpen && pickerMode && (
-        <div
-          className="overlay"
-          onClick={closePicker}
-        >
+        <div className="overlay" onClick={closePicker}>
           <div
             className="flex max-h-[calc(100vh-3rem)] w-full max-w-6xl flex-col rounded-[10px] border border-(--terciary-grey) bg-white p-5"
             onClick={(event) => event.stopPropagation()}
@@ -127,7 +125,7 @@ export default function PowerdeedAccess() {
                 )
               ) : (
                 <div className="grid min-h-40 place-items-center text-style__small-text text-(--primary-grey)">
-                  Loading permissions...
+                  <Loader /> Loading permissions...
                 </div>
               )}
             </div>
@@ -136,10 +134,7 @@ export default function PowerdeedAccess() {
       )}
 
       {canManageAccess && roleRemovalDialog && (
-        <div
-          className="overlay"
-          onClick={() => setRoleRemovalDialog(null)}
-        >
+        <div className="overlay" onClick={() => setRoleRemovalDialog(null)}>
           <div
             className="w-full max-w-xl rounded-[10px] border border-(--terciary-grey) bg-white p-5 shadow-xl"
             onClick={(event) => event.stopPropagation()}

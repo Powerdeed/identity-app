@@ -13,6 +13,5 @@ export { default as useDashboard } from "./hooks/useDashboard";
 export { default as useDashboardApi } from "./hooks/useDashboardApi";
 export * from "./hooks/useDashboardApi";
 
-// Services and constants
-export * from "./services/actionApi";
+// Constants
 export * from "./constants/PageMetaData";

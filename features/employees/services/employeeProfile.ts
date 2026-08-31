@@ -1,10 +1,14 @@
-import type { AccessProfile, EmploymentProfile, User } from "@/app/auth";
-import { identityApiRequest } from "@/lib/api/identityApiRequest";
+import type {
+  AccessProfile,
+  EmploymentProfile,
+  User,
+} from "@/globals/types/user.type";
+import { apiRequest } from "@lib";
 
 type UserResponse = { success: boolean; user: User };
 
 export async function getEmployee(employeeId: string): Promise<User> {
-  const response = await identityApiRequest<UserResponse>({
+  const response = await apiRequest<UserResponse>({
     method: "GET",
     url: `/users/${employeeId}`,
   });
@@ -15,7 +19,7 @@ export async function updateEmployeeEmployment(
   employeeId: string,
   employment: EmploymentProfile,
 ): Promise<User> {
-  const response = await identityApiRequest<UserResponse>({
+  const response = await apiRequest<UserResponse>({
     method: "PATCH",
     url: `/users/${employeeId}`,
     data: { employment },
@@ -27,7 +31,7 @@ export async function updateEmployeeAccess(
   employeeId: string,
   input: { access?: AccessProfile; permissions?: string[] },
 ): Promise<User> {
-  const response = await identityApiRequest<UserResponse>({
+  const response = await apiRequest<UserResponse>({
     method: "PATCH",
     url: `/users/${employeeId}/access`,
     data: input,

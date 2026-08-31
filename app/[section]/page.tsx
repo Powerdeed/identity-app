@@ -21,13 +21,26 @@ import SessionsAndDevices from "@/features/sessions-and-devices/SessionsAndDevic
 import SecurityActivity from "@/features/security-activity/SecurityActivity";
 import AccessReviews from "@/features/access-reviews/AccessReviews";
 import PoliciesAndConfiguration from "@/features/policies-and-configuration/PoliciesAndConfiguration";
+import { SectionParamsProvider } from "./SectionParamsContext";
 
 export default function Section({
   params,
+  searchParams,
 }: {
   params: Promise<{ section: MenuLabels }>;
+  searchParams: Promise<{
+    search?: string | string[];
+    tab?: string | string[];
+  }>;
 }) {
   const { section } = use(params);
+  const routeSearchParams = use(searchParams);
+  const routeSearch = Array.isArray(routeSearchParams.search)
+    ? (routeSearchParams.search[0] ?? "")
+    : (routeSearchParams.search ?? "");
+  const routeTab = Array.isArray(routeSearchParams.tab)
+    ? routeSearchParams.tab[0]
+    : routeSearchParams.tab;
   const sectionLabel = convertLinkToLabel(decodeURIComponent(section));
   const { globalStates } = useGlobals();
 
@@ -57,7 +70,9 @@ export default function Section({
           <h1 className="text-style__page-title">Page not found</h1>
         </div>
       ) : canViewSection ? (
-        content
+        <SectionParamsProvider search={routeSearch} tab={routeTab}>
+          {content}
+        </SectionParamsProvider>
       ) : (
         <div className="uniform-page-display text-style__body">
           <h1 className="text-style__page-title">Access denied</h1>

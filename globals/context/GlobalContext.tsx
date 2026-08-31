@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, Dispatch, SetStateAction } from "react";
-import type { User } from "@app/auth";
+import type { User } from "@/globals/types/user.type";
 
 export type UnsavedChangesNoticeText = {
   title: string;

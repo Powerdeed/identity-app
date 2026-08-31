@@ -16,14 +16,14 @@ export default function SelectPerson() {
   const employee = workflow.selectedUser;
   const currentAccess = [
     ...workflow.keycloakGroups.map((group) => group.name),
-    ...(employee?.access?.roles.map((role) => role.roleId) ?? []),
+    ...(employee?.access?.roles ?? []).map((role) => role.roleId),
   ];
 
   return (
     <div className="vertical-layout__outer">
       <div className="text-style__small-text text-(--primary-grey)">
-        Search for an active staff member who is changing departments, roles,
-        or reporting line. Only active accounts can be moved.
+        Search for an active staff member who is changing departments, roles, or
+        reporting line. Only active accounts can be moved.
       </div>
 
       <div className="text-style__body">SEARCH STAFF</div>
@@ -39,44 +39,42 @@ export default function SelectPerson() {
         </div>
       )}
 
-      {!employee &&
-        !search.isSearching &&
-        search.search.trim().length >= 2 && (
-          <div className="vertical-layout__inner border border-(--terciary-grey) rounded-[10px] p-2.5">
-            {search.results.map((candidate, index) => (
+      {!employee && !search.isSearching && search.search.trim().length >= 2 && (
+        <div className="vertical-layout__inner border border-(--terciary-grey) rounded-[10px] p-2.5">
+          {search.results.map((candidate, index) => (
+            <div
+              key={candidate.id}
+              className={`horizontal-layout ${index + 1 !== search.results.length ? "border-b border-(--terciary-grey) pb-2.5" : ""}`}
+            >
               <div
-                key={candidate.id}
-                className={`horizontal-layout ${index + 1 !== search.results.length ? "border-b border-(--terciary-grey) pb-2.5" : ""}`}
+                className={`w-8 h-8 grid items-center text-center ${getRandomClassNameColor(candidate.id)} rounded-[10px] text-style__body--bold`}
               >
-                <div
-                  className={`w-8 h-8 grid items-center text-center ${getRandomClassNameColor(candidate.id)} rounded-[10px] text-style__body--bold`}
-                >
-                  {getInitials(candidate.name)}
-                </div>
-                <div className="flex-1">
-                  <div className="text-style__body--bold">{candidate.name}</div>
-                  <div className="horizontal-layout text-style__small-text text-(--primary-grey)">
-                    <div>{candidate.email}</div>
-                    <Dotindicator />
-                    <div>{formatLabel(candidate.employment?.departmentId)}</div>
-                  </div>
-                </div>
-                <Button
-                  buttonType="light"
-                  buttonText={search.isLoadingSelection ? "Loading..." : "Select"}
-                  disabled={search.isLoadingSelection}
-                  clickAction={() => search.selectUser(candidate)}
-                />
+                {getInitials(candidate.name)}
               </div>
-            ))}
+              <div className="flex-1">
+                <div className="text-style__body--bold">{candidate.name}</div>
+                <div className="horizontal-layout text-style__small-text text-(--primary-grey)">
+                  <div>{candidate.email}</div>
+                  <Dotindicator />
+                  <div>{formatLabel(candidate.employment?.departmentId)}</div>
+                </div>
+              </div>
+              <Button
+                buttonType="light"
+                buttonText={search.isLoadingSelection ? "Loading..." : "Select"}
+                disabled={search.isLoadingSelection}
+                clickAction={() => search.selectUser(candidate)}
+              />
+            </div>
+          ))}
 
-            {!search.results.length && (
-              <div className="py-5 text-center text-style__small-text text-(--primary-grey)">
-                No active employees match that search.
-              </div>
-            )}
-          </div>
-        )}
+          {!search.results.length && (
+            <div className="py-5 text-center text-style__small-text text-(--primary-grey)">
+              No active employees match that search.
+            </div>
+          )}
+        </div>
+      )}
 
       {employee && (
         <>

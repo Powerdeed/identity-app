@@ -10,12 +10,11 @@ import { formatLabel } from "../../../utils/formatLabel";
 export default function Overview() {
   const { state } = useEmployees();
   const overview = useEmployeeOverviewData();
-
   const employee = state.selectedEmployee;
 
   if (!employee) return null;
 
-  const AccessSummary: Record<
+  const accessSummary: Record<
     "Keycloak Groups" | "Powerdeed Roles" | "Direct Permission Exceptions",
     { access: string[]; color: string }
   > = {
@@ -25,7 +24,7 @@ export default function Overview() {
         "border-(--primary-green)/50 bg-(--primary-green)/10 text-(--primary-green)",
     },
     "Powerdeed Roles": {
-      access: employee.roles || [],
+      access: employee.access?.roles?.map((role) => role.roleId) || [],
       color:
         "border-(--secondary-blue) bg-(--secondary-blue)/15 text-(--secondary-blue)",
     },
@@ -38,7 +37,7 @@ export default function Overview() {
 
   const userOverview = {
     "Employee Number": employee.employment?.employeeNumber,
-    Manager: employee.employment?.managerId,
+    Manager: employee.employment?.managerName || employee.employment?.managerId,
     "Active Sessions":
       state.fetchingEmployeeData && state.employeeSessions.length === 0
         ? "Loading..."
@@ -58,7 +57,7 @@ export default function Overview() {
         <div className="vertical-layout__inner text-style__body">
           <ContainerTitle title="Effective Access Summary" />
 
-          {Object.entries(AccessSummary).map(([accessType, accessVals], i) => (
+          {Object.entries(accessSummary).map(([accessType, accessVals], i) => (
             <div key={accessType} className="vertical-layout__inner">
               <div className="horizontal-layout">
                 {accessType === "Direct Permission Exceptions" && (
@@ -85,7 +84,7 @@ export default function Overview() {
                   </div>
                 )}
               </div>
-              {i !== Object.keys(AccessSummary).length - 1 && (
+              {i !== Object.keys(accessSummary).length - 1 && (
                 <hr className="text-(--terciary-grey)" />
               )}
             </div>

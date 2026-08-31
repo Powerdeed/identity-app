@@ -22,7 +22,7 @@ import type {
 
 const DEFAULT_PAGE_SIZE = 10;
 
-export default function useOrganizationCatalog() {
+export default function useOrganizationCatalog(defaultSearch = "") {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [jobProfiles, setJobProfiles] = useState<JobProfile[]>([]);
   const [departmentTotal, setDepartmentTotal] = useState(0);
@@ -33,8 +33,8 @@ export default function useOrganizationCatalog() {
     useState(DEFAULT_PAGE_SIZE);
   const [jobProfilePageSize, setJobProfilePageSize] =
     useState(DEFAULT_PAGE_SIZE);
-  const [departmentSearch, setDepartmentSearch] = useState("");
-  const [jobProfileSearch, setJobProfileSearch] = useState("");
+  const [departmentSearch, setDepartmentSearch] = useState(defaultSearch);
+  const [jobProfileSearch, setJobProfileSearch] = useState(defaultSearch);
   const [status, setStatus] = useState<ReferenceDataStatus | "all">("active");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);

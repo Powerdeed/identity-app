@@ -1,5 +1,5 @@
-import { UserPermission } from "@app/auth";
-import { identityApiRequest } from "@lib/api/identityApiRequest";
+import type { UserPermission } from "@/globals/types/user.type";
+import { apiRequest } from "@lib";
 
 export type AccessRegistry = {
   groups: {
@@ -25,14 +25,14 @@ export type AccessGovernanceSummary = {
 };
 
 export const getAccessRegistry = async (): Promise<AccessRegistry> =>
-  await identityApiRequest<AccessRegistry>({
+  await apiRequest<AccessRegistry>({
     method: "GET",
     url: `/permissions/registry`,
   });
 
 export const getAccessGovernanceSummary =
   async (): Promise<AccessGovernanceSummary> =>
-    await identityApiRequest<AccessGovernanceSummary>({
+    await apiRequest<AccessGovernanceSummary>({
       method: "GET",
       url: `/admin/access-governance/summary`,
     });

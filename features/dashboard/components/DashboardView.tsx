@@ -7,8 +7,11 @@ import Changes from "./Changes";
 
 import { PAGE_META_DATA } from "../constants/PageMetaData";
 import QuickActions from "./QuickActions";
+import useDashboard from "../hooks/useDashboard";
 
 export default function DashboardView() {
+  const dashboard = useDashboard();
+
   return (
     <main className="uniform-page-display">
       <SectionTitle
@@ -16,11 +19,11 @@ export default function DashboardView() {
         subtitle={PAGE_META_DATA.subtitle}
       />
 
-      <DashboardCards />
+      <DashboardCards data={dashboard.data} isLoading={dashboard.isLoading} />
 
-      <ActionQueue />
+      <ActionQueue {...dashboard} />
 
-      <Changes />
+      <Changes {...dashboard} />
 
       <QuickActions />
     </main>

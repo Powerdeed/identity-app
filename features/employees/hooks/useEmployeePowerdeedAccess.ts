@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { RoleAssignment, RoleId } from "@/app/auth";
+import type { RoleAssignment, RoleId } from "@/globals/types/user.type";
 import { execute } from "@/lib";
 import { updateEmployeeAccess } from "../services/employeeProfile";
 import {

@@ -1,4 +1,4 @@
-import type { RoleId } from "@/app/auth";
+import type { RoleId } from "@/globals/types/user.type";
 import { getISOCalendarDate } from "@/global-components/layout/date";
 import type { MoveReasonCode } from "../constants/MOVE_REASONS";
 import type { CurrentStage } from "../constants/PROCESS_STAGES";

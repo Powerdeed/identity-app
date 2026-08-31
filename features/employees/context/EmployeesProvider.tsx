@@ -4,7 +4,7 @@ import { ReactNode, useState } from "react";
 import { employeesContext } from "./EmployeesContext";
 import { employeeContext } from "./EmployeeContext";
 import type { EmployeeMenu } from "../constants/EMPLOYEE_NAV_MENU";
-import { User, UserSession, UserPermission } from "@app/auth";
+import type { User, UserSession, UserPermission } from "@/globals/types/user.type";
 import { AuditEvent } from "../types/audit.types";
 import type { EmploymentDetails } from "../types/employeesTypes";
 import {
@@ -15,8 +15,10 @@ import {
 
 export default function EmployeesProvider({
   children,
+  defaultSearch = "",
 }: {
   children: ReactNode;
+  defaultSearch?: string;
 }) {
   const [employees, setEmployees] = useState<User[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -47,8 +49,7 @@ export default function EmployeesProvider({
   const [fetchingPermissionsError, setFetchingPermissionsError] = useState("");
 
   // Search, sort and filter
-  const [searchValue, setSearchValue] = useState("");
-  const [showProvisionNotice, setShowProvisionNotice] = useState(false);
+  const [searchValue, setSearchValue] = useState(defaultSearch);
   const [statusFilter, setStatusFilter] =
     useState<StatusFilter>("All statuses");
   const [departmentFilter, setDepartmentFilter] =
@@ -71,8 +72,6 @@ export default function EmployeesProvider({
         setFetchingEmployeesError,
         searchValue,
         setSearchValue,
-        showProvisionNotice,
-        setShowProvisionNotice,
         statusFilter,
         setStatusFilter,
         departmentFilter,

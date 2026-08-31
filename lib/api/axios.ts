@@ -1,45 +1,48 @@
-// const getApiBaseUrl = () => {
-//   const baseUrl = process.env.NEXT_PUBLIC_CMS_API_BASE_URL?.trim();
+import { getAuthRedirect } from "@/app/auth";
+import axios from "axios";
 
-//   if (!baseUrl) {
-//     throw new Error("NEXT_PUBLIC_CMS_API_BASE_URL is required.");
-//   }
+const getApiBaseUrl = () => {
+  const baseUrl = process.env.NEXT_PUBLIC_IDENTITY_API_BASE_URL?.trim();
 
-//   try {
-//     return new URL(baseUrl).origin;
-//   } catch {
-//     throw new Error("NEXT_PUBLIC_CMS_API_BASE_URL must be a valid URL.");
-//   }
-// };
+  if (!baseUrl) {
+    throw new Error("NEXT_PUBLIC_IDENTITY_API_BASE_URL is required.");
+  }
 
-// export const api = axios.create({
-//   baseURL: `${getApiBaseUrl()}/api/v1`,
-//   headers: {
-//     "Content-Type": "application/json",
-//   },
-//   withCredentials: true,
-// });
+  try {
+    return new URL(baseUrl).origin;
+  } catch {
+    throw new Error("NEXT_PUBLIC_IDENTITY_API_BASE_URL must be a valid URL.");
+  }
+};
 
-// api.interceptors.response.use(
-//   (response) => response,
-//   async (err) => {
-//     if (typeof window !== "undefined" && err.response?.status === 401) {
-//       window.location.href = getAuthRedirect();
-//     }
+export const api = axios.create({
+  baseURL: `${getApiBaseUrl()}/api/v1`,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
+});
 
-//     return Promise.reject(err);
-//   },
-// );
+api.interceptors.response.use(
+  (response) => response,
+  async (err) => {
+    if (typeof window !== "undefined" && err.response?.status === 401) {
+      window.location.href = getAuthRedirect();
+    }
 
-// api.interceptors.request.use((config) => {
-//   if (
-//     typeof FormData !== "undefined" &&
-//     config.data instanceof FormData &&
-//     config.headers
-//   ) {
-//     delete config.headers["Content-Type"];
-//     delete config.headers["content-type"];
-//   }
+    return Promise.reject(err);
+  },
+);
 
-//   return config;
-// });
+api.interceptors.request.use((config) => {
+  if (
+    typeof FormData !== "undefined" &&
+    config.data instanceof FormData &&
+    config.headers
+  ) {
+    delete config.headers["Content-Type"];
+    delete config.headers["content-type"];
+  }
+
+  return config;
+});

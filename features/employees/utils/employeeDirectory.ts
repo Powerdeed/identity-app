@@ -1,4 +1,4 @@
-import type { User } from "@/app/auth";
+import type { User } from "@/globals/types/user.type";
 import type {
   DepartmentFilter,
   EmployeeSortOption,

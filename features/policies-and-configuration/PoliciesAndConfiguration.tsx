@@ -3,9 +3,13 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMemo, useState } from "react";
 import { hasPermission, PERMISSIONS } from "@/app/auth";
+import { useSectionParams } from "@/app/[section]/SectionParamsContext";
 import { useGlobals } from "@/globals";
 import Button from "@/global-components/ui/Button";
-import DataTable, { type DataTableColumn } from "@/global-components/ui/DataTable";
+import DataTable, {
+  type DataTableColumn,
+} from "@/global-components/ui/DataTable";
+import Loader from "@/global-components/ui/Loader";
 import Notice from "@/global-components/ui/Notice";
 import PageTabs, { type PageTab } from "@/global-components/ui/PageTabs";
 import StatusChip from "@/global-components/ui/StatusChip";
@@ -48,8 +52,12 @@ const configurationTabs: PageTab<ConfigurationTab>[] = [
 function StatusBadge({ status }: { status: ReferenceDataStatus }) {
   const active = status === "active";
   return (
-    <span className={`inline-flex items-center gap-1.5 ${active ? "text-(--secondary-green)" : "text-(--primary-grey)"}`}>
-      <span className={`h-2 w-2 rounded-full ${active ? "bg-(--secondary-green)" : "bg-(--primary-grey)"}`} />
+    <span
+      className={`inline-flex items-center gap-1.5 ${active ? "text-(--secondary-green)" : "text-(--primary-grey)"}`}
+    >
+      <span
+        className={`h-2 w-2 rounded-full ${active ? "bg-(--secondary-green)" : "bg-(--primary-grey)"}`}
+      />
       {active ? "Active" : "Inactive"}
     </span>
   );
@@ -164,7 +172,11 @@ function SystemPolicies({
       <div className="grid gap-5 xl:grid-cols-2">
         <DataTable
           title="Session Policy"
-          description={catalogLoading ? "Checking identity-service..." : "Session handling rules"}
+          description={
+            catalogLoading
+              ? "Checking identity-service..."
+              : "Session handling rules"
+          }
           columns={policyColumns}
           data={sessionPolicyRows}
           getRowId={(row) => row.policy}
@@ -193,10 +205,17 @@ function SystemPolicies({
 }
 
 export default function PoliciesAndConfiguration() {
-  const catalog = useOrganizationCatalog();
+  const { search: routeSearch, tab: routeTab } = useSectionParams();
+  const catalog = useOrganizationCatalog(routeSearch);
   const activeCatalog = useActiveOrganizationCatalog();
   const { globalStates } = useGlobals();
-  const [tab, setTab] = useState<ConfigurationTab>("System Policies");
+  const requestedTab: ConfigurationTab =
+    routeTab === "departments"
+      ? "Departments"
+      : routeTab === "job-profiles"
+        ? "Job Profiles"
+        : "System Policies";
+  const [tab, setTab] = useState<ConfigurationTab>(requestedTab);
   const [departmentFormOpen, setDepartmentFormOpen] = useState(false);
   const [jobProfileFormOpen, setJobProfileFormOpen] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState<Department>();
@@ -213,7 +232,9 @@ export default function PoliciesAndConfiguration() {
         header: "DEPARTMENT",
         cell: (department) => (
           <div>
-            <div className="text-style__small-text--bold">{department.name}</div>
+            <div className="text-style__small-text--bold">
+              {department.name}
+            </div>
             <div className="text-(--primary-grey)">{department.code}</div>
           </div>
         ),
@@ -244,7 +265,7 @@ export default function PoliciesAndConfiguration() {
                 type="button"
                 title="Edit department"
                 aria-label={`Edit ${department.name}`}
-                className="buttonize rounded-[6px] p-2 hover:bg-(--terciary-grey)/30"
+                className="buttonize rounded-md p-2 hover:bg-(--terciary-grey)/30"
                 onClick={() => {
                   setEditingDepartment(department);
                   setDepartmentFormOpen(true);
@@ -254,12 +275,23 @@ export default function PoliciesAndConfiguration() {
               </button>
               <button
                 type="button"
-                title={department.status === "active" ? "Deactivate department" : "Activate department"}
+                title={
+                  department.status === "active"
+                    ? "Deactivate department"
+                    : "Activate department"
+                }
                 aria-label={`${department.status === "active" ? "Deactivate" : "Activate"} ${department.name}`}
-                className={`buttonize rounded-[6px] p-2 hover:bg-(--terciary-grey)/30 ${department.status === "active" ? "text-(--primary-red)" : "text-(--secondary-green)"}`}
-                onClick={() => setStatusDialog({ type: "department", record: department })}
+                className={`buttonize rounded-md p-2 hover:bg-(--terciary-grey)/30 ${department.status === "active" ? "text-(--primary-red)" : "text-(--secondary-green)"}`}
+                onClick={() =>
+                  setStatusDialog({ type: "department", record: department })
+                }
               >
-                <FontAwesomeIcon icon={["fas", department.status === "active" ? "ban" : "check"]} />
+                <FontAwesomeIcon
+                  icon={[
+                    "fas",
+                    department.status === "active" ? "ban" : "check",
+                  ]}
+                />
               </button>
             </div>
           ) : null,
@@ -280,14 +312,26 @@ export default function PoliciesAndConfiguration() {
           </div>
         ),
       },
-      { id: "department", header: "DEPARTMENT", cell: (profile) => profile.department.name },
+      {
+        id: "department",
+        header: "DEPARTMENT",
+        cell: (profile) => profile.department.name,
+      },
       {
         id: "seniority",
         header: "SENIORITY",
         cell: (profile) => profile.seniorityLevel?.replaceAll("_", " ") ?? "-",
       },
-      { id: "manager", header: "MANAGER POSITION", cell: (profile) => (profile.isPeopleManager ? "Yes" : "No") },
-      { id: "status", header: "STATUS", cell: (profile) => <StatusBadge status={profile.status} /> },
+      {
+        id: "manager",
+        header: "MANAGER POSITION",
+        cell: (profile) => (profile.isPeopleManager ? "Yes" : "No"),
+      },
+      {
+        id: "status",
+        header: "STATUS",
+        cell: (profile) => <StatusBadge status={profile.status} />,
+      },
       {
         id: "actions",
         header: "",
@@ -299,7 +343,7 @@ export default function PoliciesAndConfiguration() {
                 type="button"
                 title="Edit job profile"
                 aria-label={`Edit ${profile.title}`}
-                className="buttonize rounded-[6px] p-2 hover:bg-(--terciary-grey)/30"
+                className="buttonize rounded-md p-2 hover:bg-(--terciary-grey)/30"
                 onClick={() => {
                   setEditingJobProfile(profile);
                   setJobProfileFormOpen(true);
@@ -309,12 +353,20 @@ export default function PoliciesAndConfiguration() {
               </button>
               <button
                 type="button"
-                title={profile.status === "active" ? "Deactivate job profile" : "Activate job profile"}
+                title={
+                  profile.status === "active"
+                    ? "Deactivate job profile"
+                    : "Activate job profile"
+                }
                 aria-label={`${profile.status === "active" ? "Deactivate" : "Activate"} ${profile.title}`}
-                className={`buttonize rounded-[6px] p-2 hover:bg-(--terciary-grey)/30 ${profile.status === "active" ? "text-(--primary-red)" : "text-(--secondary-green)"}`}
-                onClick={() => setStatusDialog({ type: "jobProfile", record: profile })}
+                className={`buttonize rounded-md p-2 hover:bg-(--terciary-grey)/30 ${profile.status === "active" ? "text-(--primary-red)" : "text-(--secondary-green)"}`}
+                onClick={() =>
+                  setStatusDialog({ type: "jobProfile", record: profile })
+                }
               >
-                <FontAwesomeIcon icon={["fas", profile.status === "active" ? "ban" : "check"]} />
+                <FontAwesomeIcon
+                  icon={["fas", profile.status === "active" ? "ban" : "check"]}
+                />
               </button>
             </div>
           ) : null,
@@ -330,11 +382,7 @@ export default function PoliciesAndConfiguration() {
         subtitle="System policy display and identity reference data"
       />
 
-      <PageTabs
-        tabs={configurationTabs}
-        activeTab={tab}
-        onChange={setTab}
-      />
+      <PageTabs tabs={configurationTabs} activeTab={tab} onChange={setTab} />
 
       {tab === "System Policies" ? (
         <SystemPolicies
@@ -345,44 +393,48 @@ export default function PoliciesAndConfiguration() {
 
       {tab !== "System Policies" ? (
         <div className="flex flex-wrap items-center justify-between gap-2.5">
-        <div className="w-48">
-          <SearchableSelect
-            value={catalog.status}
-            options={[
-              { value: "active", label: "Active" },
-              { value: "inactive", label: "Inactive" },
-              { value: "all", label: "All statuses" },
-            ]}
-            onChange={(status) => catalog.setStatus(status as ReferenceDataStatus | "all")}
-            searchPlaceholder="Search statuses"
-          />
-        </div>
-        {canManage && (
-          <Button
-            buttonText={tab === "Departments" ? "Add Department" : "Add Job Profile"}
-            icon={<FontAwesomeIcon icon={["fas", "plus"]} />}
-            clickAction={() => {
-              catalog.clearFeedback();
-              if (tab === "Departments") {
-                setEditingDepartment(undefined);
-                setDepartmentFormOpen(true);
-              } else {
-                setEditingJobProfile(undefined);
-                setJobProfileFormOpen(true);
+          <div className="w-48">
+            <SearchableSelect
+              value={catalog.status}
+              options={[
+                { value: "active", label: "Active" },
+                { value: "inactive", label: "Inactive" },
+                { value: "all", label: "All statuses" },
+              ]}
+              onChange={(status) =>
+                catalog.setStatus(status as ReferenceDataStatus | "all")
               }
-            }}
-          />
-        )}
+              searchPlaceholder="Search statuses"
+            />
+          </div>
+          {canManage && (
+            <Button
+              buttonText={
+                tab === "Departments" ? "Add Department" : "Add Job Profile"
+              }
+              icon={<FontAwesomeIcon icon={["fas", "plus"]} />}
+              clickAction={() => {
+                catalog.clearFeedback();
+                if (tab === "Departments") {
+                  setEditingDepartment(undefined);
+                  setDepartmentFormOpen(true);
+                } else {
+                  setEditingJobProfile(undefined);
+                  setJobProfileFormOpen(true);
+                }
+              }}
+            />
+          )}
         </div>
       ) : null}
 
       {tab !== "System Policies" && catalog.error && (
-        <div className="rounded-[8px] border border-(--primary-red)/30 bg-(--primary-red)/10 p-3 text-(--primary-red)">
+        <div className="rounded-lg border border-(--primary-red)/30 bg-(--primary-red)/10 p-3 text-(--primary-red)">
           {catalog.error}
         </div>
       )}
       {tab !== "System Policies" && catalog.successMessage && (
-        <div className="rounded-[8px] border border-(--primary-green)/30 bg-(--primary-green)/10 p-3 text-(--primary-green)">
+        <div className="rounded-lg border border-(--primary-green)/30 bg-(--primary-green)/10 p-3 text-(--primary-green)">
           {catalog.successMessage}
         </div>
       )}
@@ -411,7 +463,16 @@ export default function PoliciesAndConfiguration() {
       {tab === "Departments" ? (
         <DataTable
           title="Departments"
-          description={catalog.isLoading ? "Loading departments..." : `${catalog.departmentTotal} department${catalog.departmentTotal === 1 ? "" : "s"}`}
+          description={
+            catalog.isLoading ? (
+              <div className="horizontal-layout">
+                <Loader />
+                <span>Loading departments...</span>
+              </div>
+            ) : (
+              `${catalog.departmentTotal} department${catalog.departmentTotal === 1 ? "" : "s"}`
+            )
+          }
           columns={departmentColumns}
           data={catalog.departments}
           getRowId={(department) => department.id}
@@ -433,7 +494,16 @@ export default function PoliciesAndConfiguration() {
       ) : tab === "Job Profiles" ? (
         <DataTable
           title="Job Profiles"
-          description={catalog.isLoading ? "Loading job profiles..." : `${catalog.jobProfileTotal} job profile${catalog.jobProfileTotal === 1 ? "" : "s"}`}
+          description={
+            catalog.isLoading ? (
+              <div className="horizontal-layout">
+                <Loader />
+                <span>Loading job profiles...</span>
+              </div>
+            ) : (
+              `${catalog.jobProfileTotal} job profile${catalog.jobProfileTotal === 1 ? "" : "s"}`
+            )
+          }
           columns={jobProfileColumns}
           data={catalog.jobProfiles}
           getRowId={(profile) => profile.id}
@@ -456,8 +526,14 @@ export default function PoliciesAndConfiguration() {
 
       {statusDialog && (
         <CatalogStatusDialog
-          recordName={statusDialog.type === "department" ? statusDialog.record.name : statusDialog.record.title}
-          nextAction={statusDialog.record.status === "active" ? "deactivate" : "activate"}
+          recordName={
+            statusDialog.type === "department"
+              ? statusDialog.record.name
+              : statusDialog.record.title
+          }
+          nextAction={
+            statusDialog.record.status === "active" ? "deactivate" : "activate"
+          }
           isSaving={catalog.isSaving}
           onCancel={() => setStatusDialog(undefined)}
           onConfirm={(reason) =>

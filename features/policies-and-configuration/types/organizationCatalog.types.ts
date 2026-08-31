@@ -1,4 +1,4 @@
-import type { SeniorityLevel } from "@/app/auth";
+import type { SeniorityLevel } from "@/globals/types/user.type";
 
 export type ReferenceDataStatus = "active" | "inactive";
 

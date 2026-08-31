@@ -1,4 +1,5 @@
 // context
+export * from "./types/user.type";
 export * from "./context/GlobalContext";
 export { default as GlobalProvider } from "./context/GlobalProvider";
 export * from "./context/GlobalProvider";

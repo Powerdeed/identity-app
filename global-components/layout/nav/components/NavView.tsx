@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { useGlobals } from "@globals";
 
-import SearchBar from "@/global-components/ui/SearchBar";
+import GlobalSearchInput from "@/features/global-search/components/GlobalSearchInput";
 import { SeparatorLine } from "../../FormWrapper";
 
 import "@/global-components/icons/icons";
@@ -69,10 +69,9 @@ export default function NavView() {
     <nav
       className={`fixed h-15 top-0 ${globalStates.sideBarOpen ? "left-65  w-[calc(100vw-260px)]" : "left-15  w-[calc(100vw-70px)]"} z-50 flex gap-2.5 items-center border-b border-(--terciary-grey) backdrop-blur shadow-[0_4px_6px_-1px_rgba(51,51,51,0.1)] py-2.5 px-5 text-style__body`}
     >
-      <SearchBar
-        val={navStates.searchQuery}
-        placeholder="Search employees, email, department,..."
-        changeFunc={(val) => navStates.setSearchQuery(val)}
+      <GlobalSearchInput
+        value={navStates.searchQuery}
+        onChange={navStates.setSearchQuery}
       />
 
       {/* NOTIFICATIONS */}

@@ -1,5 +1,5 @@
-import { identityApiRequest } from "@/lib/api/identityApiRequest";
-import type { User } from "@/app/auth";
+import type { User } from "@/globals/types/user.type";
+import { apiRequest } from "@lib";
 
 export type AssignmentAccessReviewStatus =
   | "not_required"
@@ -51,7 +51,7 @@ export const getAssignmentAccessReviews = (params: {
   page?: number;
   pageSize?: number;
 }) =>
-  identityApiRequest<AssignmentAccessReviewPage>({
+  apiRequest<AssignmentAccessReviewPage>({
     method: "GET",
     url: "/admin/access-reviews",
     params,
@@ -64,7 +64,7 @@ export const updateAssignmentAccessReview = (
     notes?: string;
   },
 ) =>
-  identityApiRequest<{ review: AssignmentAccessReview }>({
+  apiRequest<{ review: AssignmentAccessReview }>({
     method: "POST",
     url: `/admin/access-reviews/${reviewId}/decision`,
     data,

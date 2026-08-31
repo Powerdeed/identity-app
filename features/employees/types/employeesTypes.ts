@@ -22,19 +22,13 @@ export interface EmployeeTableRow {
 
 export type EmploymentDetails = {
   "EMPLOYEE NUMBER": string;
-  DEPARTMENT: DepartmentId;
+  DEPARTMENT: string;
+  "JOB PROFILE": string;
   TEAM: string;
-  "JOB TITLE": string;
-  "POSITION CODE": string;
-  SENIORITY: SeniorityLevel;
   "EMPLOYEE TYPE": EmploymentType;
   "WORK LOCATION": string;
   "START DATE": string;
   "END DATE": string;
   MANAGER: string;
 };
-import type {
-  DepartmentId,
-  EmploymentType,
-  SeniorityLevel,
-} from "@/app/auth";
+import type { EmploymentType } from "@/globals/types/user.type";

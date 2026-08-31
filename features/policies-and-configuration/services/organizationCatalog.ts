@@ -1,4 +1,5 @@
-import { identityApiRequest } from "@/lib/api/identityApiRequest";
+import { apiRequest } from "@lib";
+
 import type {
   CatalogPage,
   Department,
@@ -18,14 +19,14 @@ type CatalogListParams = {
 };
 
 export const getDepartments = (params: CatalogListParams = {}) =>
-  identityApiRequest<CatalogPage<{ departments: Department[] }>>({
+  apiRequest<CatalogPage<{ departments: Department[] }>>({
     method: "GET",
     url: "/organization/departments",
     params,
   });
 
 export const createDepartment = async (input: DepartmentInput) => {
-  const data = await identityApiRequest<{ department: Department }>({
+  const data = await apiRequest<{ department: Department }>({
     method: "POST",
     url: "/organization/departments",
     data: input,
@@ -36,7 +37,7 @@ export const createDepartment = async (input: DepartmentInput) => {
 export const updateDepartment = async (id: string, input: DepartmentInput) => {
   const changes = { ...input };
   delete changes.code;
-  const data = await identityApiRequest<{ department: Department }>({
+  const data = await apiRequest<{ department: Department }>({
     method: "PATCH",
     url: `/organization/departments/${id}`,
     data: changes,
@@ -49,7 +50,7 @@ export const setDepartmentStatus = async (
   status: ReferenceDataStatus,
   reason: string,
 ) => {
-  const data = await identityApiRequest<{ department: Department }>({
+  const data = await apiRequest<{ department: Department }>({
     method: "POST",
     url: `/organization/departments/${id}/${status === "active" ? "activate" : "deactivate"}`,
     data: { reason },
@@ -58,7 +59,7 @@ export const setDepartmentStatus = async (
 };
 
 export const getJobProfiles = (params: CatalogListParams = {}) =>
-  identityApiRequest<CatalogPage<{ jobProfiles: JobProfile[] }>>({
+  apiRequest<CatalogPage<{ jobProfiles: JobProfile[] }>>({
     method: "GET",
     url: "/organization/job-profiles",
     params,
@@ -69,14 +70,14 @@ export const getManagerCandidates = (
     excludeUserId?: string;
   } = {},
 ) =>
-  identityApiRequest<CatalogPage<{ managers: ManagerCandidate[] }>>({
+  apiRequest<CatalogPage<{ managers: ManagerCandidate[] }>>({
     method: "GET",
     url: "/organization/manager-candidates",
     params,
   });
 
 export const createJobProfile = async (input: JobProfileInput) => {
-  const data = await identityApiRequest<{ jobProfile: JobProfile }>({
+  const data = await apiRequest<{ jobProfile: JobProfile }>({
     method: "POST",
     url: "/organization/job-profiles",
     data: input,
@@ -87,7 +88,7 @@ export const createJobProfile = async (input: JobProfileInput) => {
 export const updateJobProfile = async (id: string, input: JobProfileInput) => {
   const changes = { ...input };
   delete changes.code;
-  const data = await identityApiRequest<{ jobProfile: JobProfile }>({
+  const data = await apiRequest<{ jobProfile: JobProfile }>({
     method: "PATCH",
     url: `/organization/job-profiles/${id}`,
     data: changes,
@@ -100,7 +101,7 @@ export const setJobProfileStatus = async (
   status: ReferenceDataStatus,
   reason: string,
 ) => {
-  const data = await identityApiRequest<{ jobProfile: JobProfile }>({
+  const data = await apiRequest<{ jobProfile: JobProfile }>({
     method: "POST",
     url: `/organization/job-profiles/${id}/${status === "active" ? "activate" : "deactivate"}`,
     data: { reason },

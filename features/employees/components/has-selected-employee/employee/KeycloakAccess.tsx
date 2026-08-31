@@ -40,7 +40,7 @@ export default function KeycloakAccess() {
     pickerError,
     keycloakGroupMembershipList,
     directRealmRolesList,
-    clientRoleList,
+    assignedClientRoles,
     groupRows,
     realmRoleRows,
     clientRoleRows,
@@ -101,7 +101,7 @@ export default function KeycloakAccess() {
   const roleColumns = <
     T extends { id: string; clientId: string; role: string },
   >(
-    onRemove: (role: (typeof clientRoleList)[number]) => void,
+    onRemove: (role: (typeof assignedClientRoles)[number]) => void,
   ): DataTableColumn<T>[] => [
     {
       id: "name",
@@ -119,12 +119,12 @@ export default function KeycloakAccess() {
       id: "removeAction",
       header: "",
       cellClassName: "text-(--primary-grey)",
-      cell: () =>
+      cell: (role) =>
         canManageKeycloakAccess ? (
           <FontAwesomeIcon
             icon={["fas", "xmark"]}
             className="buttonize text-style__small-text p-1.5 rounded-[10px] text-(--primary-grey) hover:bg-(--primary-red)/10 hover:text-(--primary-red)"
-            onClick={() => onRemove}
+            onClick={() => onRemove(role)}
           />
         ) : null,
     },
@@ -251,7 +251,7 @@ export default function KeycloakAccess() {
 
       <DataTable
         title="Assigned Client Roles"
-        description={`${clientRoleList.length} roles`}
+        description={`${assignedClientRoles.length} roles`}
         headerAside={
           canManageKeycloakAccess ? (
             <Button
@@ -269,26 +269,26 @@ export default function KeycloakAccess() {
           },
           placeholder: "Search client roles",
         }}
-        columns={roleColumns<(typeof clientRoleList)[number]>(
-          (role: (typeof clientRoleList)[number]) =>
+        columns={roleColumns<(typeof assignedClientRoles)[number]>(
+          (role: (typeof assignedClientRoles)[number]) =>
             setRemovalTarget({
               type: "client-role",
               clientId: role.clientId,
               name: role.role,
             }),
         )}
-        data={paginate(clientRoleList, pickerPage)}
+        data={paginate(assignedClientRoles, pickerPage)}
         getRowId={(role) => role.id}
         pagination={{
           currentPage: pickerPage,
           pageSize,
-          totalItems: clientRoleList.length,
+          totalItems: assignedClientRoles.length,
           onPageChange: setPickerPage,
           onPageSizeChange: () => undefined,
         }}
       />
 
-      {!clientRoleList.length && (
+      {!assignedClientRoles.length && (
         <div className="text-style__small-text text-(--primary-grey)">
           No direct client roles assigned.
         </div>

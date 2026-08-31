@@ -9,7 +9,7 @@ import useEmployees from "./useEmployees";
 export default function useEmployeeOverviewData() {
   const { state } = useEmployees();
   const employeeId = state.selectedEmployee?.id;
-  const [currentTime] = useState(Date.now);
+  const [currentTime] = useState(() => Date.now());
   const {
     setEmployeeSessions,
     setEmployeeLastActivity,

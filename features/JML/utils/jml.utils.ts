@@ -1,4 +1,4 @@
-import type { AppId, EmploymentProfile, EmploymentType, RoleId } from "@/app/auth";
+import type { AppId, EmploymentProfile, EmploymentType, RoleId } from "@/globals/types/user.type";
 import type {
   JMLAccessAssignment,
   JMLEmploymentForm,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { SeniorityLevel } from "@/app/auth";
+import type { SeniorityLevel } from "@/globals/types/user.type";
 import Button from "@/global-components/ui/Button";
 import SearchableSelect from "@/global-components/ui/SearchableSelect";
 import type {

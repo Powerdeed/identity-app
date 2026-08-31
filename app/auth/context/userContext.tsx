@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, Dispatch, SetStateAction } from "react";
-import type { User } from "../types/user.type";
+import type { User } from "../../../globals/types/user.type";
 
 interface UserContext {
   user: User | null;

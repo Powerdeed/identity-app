@@ -20,10 +20,12 @@ export const createEmployeeTableColumns = (
         <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-(--primary-blue) text-style__small-text--bold text-white">
           {getInitials(employee.name)}
         </div>
+
         <div className="min-w-0">
           <div className="truncate text-style__body--bold text-(--primary-blue)">
             {employee.name}
           </div>
+
           <div className="truncate text-(--primary-grey)">{employee.email}</div>
         </div>
       </div>
@@ -54,7 +56,7 @@ export const createEmployeeTableColumns = (
       <span
         className={`inline-flex rounded-[10px] border px-1 py-0.5 ${STATUS_STYLES[employee.status]}`}
       >
-        {formatLabel(employee.status)}
+        {formatLabel(employee.status)}AI Overview
       </span>
     ),
   },

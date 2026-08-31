@@ -79,7 +79,9 @@ export default function useEmployeeKeycloakAccess() {
         setError: setPickerError,
         onSuccess: (availableClients) => {
           setClients(availableClients);
-          const firstEnabled = availableClients.find((client) => client.enabled);
+          const firstEnabled = availableClients.find(
+            (client) => client.enabled,
+          );
           setSelectedClientId(
             firstEnabled?.clientId ?? availableClients[0]?.clientId ?? "",
           );
@@ -142,8 +144,13 @@ export default function useEmployeeKeycloakAccess() {
   const addRealmRole = (roleName: string) => {
     if (!keycloakUserId) return;
     void execute(
-      () => addEmployeeKeycloakRole(keycloakUserId, { scope: "realm", roleName }),
-      { setLoading: setIsSaving, setError: setPickerError, onSuccess: afterMutation },
+      () =>
+        addEmployeeKeycloakRole(keycloakUserId, { scope: "realm", roleName }),
+      {
+        setLoading: setIsSaving,
+        setError: setPickerError,
+        onSuccess: afterMutation,
+      },
     );
   };
 
@@ -156,7 +163,11 @@ export default function useEmployeeKeycloakAccess() {
           clientId: selectedClientId,
           roleName,
         }),
-      { setLoading: setIsSaving, setError: setPickerError, onSuccess: afterMutation },
+      {
+        setLoading: setIsSaving,
+        setError: setPickerError,
+        onSuccess: afterMutation,
+      },
     );
   };
 
@@ -214,6 +225,9 @@ export default function useEmployeeKeycloakAccess() {
       .filter((role) => role.clientId === selectedClientId)
       .map((role) => role.role),
   );
+  const assignedClientRoles = clientRoleList.filter((role) =>
+    matchesSearch([role.role]),
+  );
   const clientRoleRows = clientRoles
     .filter((role) => matchesSearch([role.name, role.description]))
     .map((role) => ({
@@ -241,6 +255,7 @@ export default function useEmployeeKeycloakAccess() {
     keycloakGroupMembershipList,
     directRealmRolesList,
     clientRoleList,
+    assignedClientRoles,
     groupRows,
     realmRoleRows,
     clientRoleRows,

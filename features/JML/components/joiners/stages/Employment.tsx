@@ -12,6 +12,14 @@ import useActiveOrganizationCatalog from "@/features/policies-and-configuration/
 import useManagerCandidateSearch from "../../../hooks/useManagerCandidateSearch";
 import useJML from "../../../hooks/useJML";
 
+const employmentTypes = [
+  ["full_time", "Full-time"],
+  ["part_time", "Part-time"],
+  ["contractor", "Contractor"],
+  ["intern", "Intern"],
+  ["temporary", "Temporary"],
+] as const;
+
 export default function Employment() {
   const { state, dispatch } = useJML();
   const [departmentSearch, setDepartmentSearch] = useState("");
@@ -152,15 +160,21 @@ export default function Employment() {
 
         <div className="vertical-layout__inner">
           <div>EMPLOYMENT TYPE</div>
-          <InputArea
-            val={state.employment.employmentType}
-            changeFunc={(value) =>
+          <SearchableSelect
+            value={state.employment.employmentType}
+            options={employmentTypes.map(([value, label]) => ({
+              value,
+              label,
+            }))}
+            onChange={(value) =>
               dispatch({
                 type: "employment/update",
                 field: "employmentType",
                 value,
               })
             }
+            placeholder="Select employment type"
+            searchPlaceholder="Search employment types"
           />
         </div>
 

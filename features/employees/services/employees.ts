@@ -1,5 +1,5 @@
-import { User } from "@/app/auth";
-import { identityApiRequest } from "@/lib/api/identityApiRequest";
+import { User } from "@/globals/types/user.type";
+import { apiRequest } from "@lib";
 
 type rawUserData = {
   page: number;
@@ -18,7 +18,7 @@ type GetEmployeesParams = {
 export const getEmployees = async (
   params: GetEmployeesParams = {},
 ): Promise<User[]> => {
-  const userData = await identityApiRequest<rawUserData>({
+  const userData = await apiRequest<rawUserData>({
     method: "GET",
     url: "/users",
     params: {

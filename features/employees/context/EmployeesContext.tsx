@@ -1,7 +1,7 @@
 "use client";
 
 import { Dispatch, SetStateAction, createContext } from "react";
-import { User } from "@app/auth";
+import type { User } from "@/globals/types/user.type";
 import {
   DepartmentFilter,
   EmployeeSortOption,
@@ -21,8 +21,6 @@ type EmployeesContextValue = {
   setFetchingEmployeesError: Dispatch<SetStateAction<string>>;
   searchValue: string;
   setSearchValue: Dispatch<SetStateAction<string>>;
-  showProvisionNotice: boolean;
-  setShowProvisionNotice: Dispatch<SetStateAction<boolean>>;
   statusFilter: StatusFilter;
   setStatusFilter: Dispatch<SetStateAction<StatusFilter>>;
   departmentFilter: DepartmentFilter;

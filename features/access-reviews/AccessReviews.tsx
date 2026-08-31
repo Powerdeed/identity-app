@@ -3,13 +3,16 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useMemo, useState } from "react";
 
+import { useSectionParams } from "@/app/[section]/SectionParamsContext";
 import Button from "@/global-components/ui/Button";
 import DataTable, {
   type DataTableColumn,
 } from "@/global-components/ui/DataTable";
 import EmptyState from "@/global-components/ui/EmptyState";
+import Loader from "@/global-components/ui/Loader";
 import MetricCard from "@/global-components/ui/MetricCard";
 import Notice from "@/global-components/ui/Notice";
+import Selector from "@/global-components/ui/Selector";
 import StatusChip from "@/global-components/ui/StatusChip";
 import { SectionTitle } from "@/global-components/ui/Title";
 import { getDateTimeFormatted, useGlobals } from "@/globals";
@@ -45,6 +48,14 @@ const statusLabels: Record<AssignmentAccessReviewStatus, string> = {
   waived: "Waived",
 };
 
+const reviewStatusOptions = [
+  { value: "all", label: "All statuses" },
+  ...Object.entries(statusLabels).map(([value, label]) => ({
+    value: value as AssignmentAccessReviewStatus,
+    label,
+  })),
+];
+
 function initials(name: string) {
   return name
     .split(" ")
@@ -67,7 +78,8 @@ function getAccessSnapshot(review: AssignmentAccessReview) {
     review.assignmentHistory.accessSnapshot?.access?.roles?.map(
       (role) => role.roleId,
     ) ?? [];
-  const permissions = review.assignmentHistory.accessSnapshot?.permissions ?? [];
+  const permissions =
+    review.assignmentHistory.accessSnapshot?.permissions ?? [];
   return [...new Set([...roles, ...permissions])];
 }
 
@@ -101,7 +113,7 @@ function DecisionDialog({
           </button>
         </div>
         <div className="vertical-layout__inner p-4">
-          <div className="rounded-[8px] border border-(--terciary-grey) bg-(--terciary-grey)/10 p-3">
+          <div className="rounded-lg border border-(--terciary-grey) bg-(--terciary-grey)/10 p-3">
             <div className="text-style__small-text--bold text-(--primary-blue)">
               {decision.review.assignmentHistory.user.name}
             </div>
@@ -116,13 +128,17 @@ function DecisionDialog({
             <textarea
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
-              className="min-h-28 rounded-[8px] border border-(--terciary-grey) bg-(--terciary-grey)/20 p-3 outline-none focus:border-(--secondary-blue)"
+              className="min-h-28 rounded-lg border border-(--terciary-grey) bg-(--terciary-grey)/20 p-3 outline-none focus:border-(--secondary-blue)"
               placeholder="Document the decision or why this access still makes sense."
             />
           </label>
         </div>
         <div className="flex justify-end gap-2.5 border-t border-(--terciary-grey) p-4">
-          <Button buttonText="Cancel" buttonType="light" clickAction={onCancel} />
+          <Button
+            buttonText="Cancel"
+            buttonType="light"
+            clickAction={onCancel}
+          />
           <Button
             buttonText={decision.label}
             disabled={isSaving}
@@ -135,10 +151,11 @@ function DecisionDialog({
 }
 
 export default function AccessReviews() {
+  const { search: routeSearch } = useSectionParams();
   const { globalStates } = useGlobals();
   const [reviews, setReviews] = useState<AssignmentAccessReview[]>([]);
   const [status, setStatus] = useState<ReviewFilter>("all");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(routeSearch);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
@@ -213,8 +230,10 @@ export default function AccessReviews() {
   const counts = useMemo(
     () => ({
       pending: reviews.filter((review) => review.status === "pending").length,
-      inReview: reviews.filter((review) => review.status === "in_review").length,
-      completed: reviews.filter((review) => review.status === "completed").length,
+      inReview: reviews.filter((review) => review.status === "in_review")
+        .length,
+      completed: reviews.filter((review) => review.status === "completed")
+        .length,
       waived: reviews.filter((review) => review.status === "waived").length,
     }),
     [reviews],
@@ -252,7 +271,7 @@ export default function AccessReviews() {
       header: "PERSON",
       cell: (review) => (
         <div className="flex items-center gap-2.5">
-          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-[8px] bg-(--primary-yellow-faded)/15 text-style__small-text--bold text-(--primary-yellow)">
+          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-(--primary-yellow-faded)/15 text-style__small-text--bold text-(--primary-yellow)">
             {initials(review.assignmentHistory.user.name)}
           </div>
           <div>
@@ -302,7 +321,8 @@ export default function AccessReviews() {
     {
       id: "reviewer",
       header: "REVIEWER",
-      cell: (review) => review.reviewedBy?.name || review.assignmentHistory.actor?.name || "-",
+      cell: (review) =>
+        review.reviewedBy?.name || review.assignmentHistory.actor?.name || "-",
     },
     {
       id: "created",
@@ -331,7 +351,7 @@ export default function AccessReviews() {
           <div className="flex flex-wrap gap-1.5">
             <button
               type="button"
-              className="buttonize rounded-[8px] border border-(--secondary-blue) px-2 py-1 text-style__small-text--bold text-(--secondary-blue)"
+              className="buttonize rounded-lg border border-(--secondary-blue) px-2 py-1 text-style__small-text--bold text-(--secondary-blue)"
               onClick={() =>
                 setDecision({
                   review,
@@ -344,7 +364,7 @@ export default function AccessReviews() {
             </button>
             <button
               type="button"
-              className="buttonize rounded-[8px] border border-(--primary-yellow) px-2 py-1 text-style__small-text--bold text-(--primary-yellow)"
+              className="buttonize rounded-lg border border-(--primary-yellow) px-2 py-1 text-style__small-text--bold text-(--primary-yellow)"
               onClick={() =>
                 setDecision({
                   review,
@@ -357,7 +377,7 @@ export default function AccessReviews() {
             </button>
             <button
               type="button"
-              className="buttonize rounded-[8px] border border-(--primary-purple) px-2 py-1 text-style__small-text--bold text-(--primary-purple)"
+              className="buttonize rounded-lg border border-(--primary-purple) px-2 py-1 text-style__small-text--bold text-(--primary-purple)"
               onClick={() =>
                 setDecision({
                   review,
@@ -383,15 +403,35 @@ export default function AccessReviews() {
       />
 
       <Notice tone="info">
-        This page is backed by identity-service assignment access review records.
-        Periodic campaign scheduling can be added as a separate workflow later.
+        This page is backed by identity-service assignment access review
+        records. Periodic campaign scheduling can be added as a separate
+        workflow later.
       </Notice>
 
       <div className="grid gap-2.5 md:grid-cols-4">
-        <MetricCard label="Pending" value={counts.pending} description="Current page" tone="yellow" />
-        <MetricCard label="In review" value={counts.inReview} description="Current page" tone="blue" />
-        <MetricCard label="Completed" value={counts.completed} description="Current page" tone="green" />
-        <MetricCard label="Waived" value={counts.waived} description="Current page" />
+        <MetricCard
+          label="Pending"
+          value={counts.pending}
+          description="Current page"
+          tone="yellow"
+        />
+        <MetricCard
+          label="In review"
+          value={counts.inReview}
+          description="Current page"
+          tone="blue"
+        />
+        <MetricCard
+          label="Completed"
+          value={counts.completed}
+          description="Current page"
+          tone="green"
+        />
+        <MetricCard
+          label="Waived"
+          value={counts.waived}
+          description="Current page"
+        />
       </div>
 
       {error ? <Notice tone="danger">{error}</Notice> : null}
@@ -399,23 +439,36 @@ export default function AccessReviews() {
       <DataTable
         title="Assignment Reviews"
         description={
-          isLoading
-            ? "Loading access reviews..."
-            : `${total} review${total === 1 ? "" : "s"} found`
+          isLoading ? (
+            <div className="horizontal-layout">
+              <Loader />
+              <span>Loading access reviews...</span>
+            </div>
+          ) : (
+            `${total} review${total === 1 ? "" : "s"} found`
+          )
         }
         headerAside={
-          <select
-            value={status}
-            onChange={(event) => setStatus(event.target.value as ReviewFilter)}
-            className="rounded-[8px] border border-(--terciary-grey) bg-white px-3 py-2 text-style__small-text"
-          >
-            <option value="all">All statuses</option>
-            <option value="pending">Pending</option>
-            <option value="in_review">In review</option>
-            <option value="completed">Completed</option>
-            <option value="waived">Waived</option>
-            <option value="not_required">Not required</option>
-          </select>
+          <div className="min-w-42.5">
+            <Selector
+              options={reviewStatusOptions.map((option) => option.label)}
+              selectedOption={
+                status === "all"
+                  ? "All statuses"
+                  : statusLabels[status as AssignmentAccessReviewStatus]
+              }
+              setSelectedOption={(nextValue) => {
+                const nextStatus = reviewStatusOptions.find(
+                  (option) => option.label === nextValue,
+                );
+
+                if (nextStatus) {
+                  setStatus(nextStatus.value as ReviewFilter);
+                }
+              }}
+              selectFirstOption={false}
+            />
+          </div>
         }
         search={{
           value: search,

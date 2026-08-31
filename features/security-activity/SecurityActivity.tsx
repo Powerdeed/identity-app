@@ -2,13 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { useSectionParams } from "@/app/[section]/SectionParamsContext";
 import type { AuditEvent } from "@/features/employees/types/audit.types";
+import { DateRangePicker } from "@/global-components/layout/date";
 import DataTable, {
   type DataTableColumn,
 } from "@/global-components/ui/DataTable";
 import EmptyState from "@/global-components/ui/EmptyState";
+import Loader from "@/global-components/ui/Loader";
 import MetricCard from "@/global-components/ui/MetricCard";
 import Notice from "@/global-components/ui/Notice";
+import Selector from "@/global-components/ui/Selector";
 import StatusChip from "@/global-components/ui/StatusChip";
 import { SectionTitle } from "@/global-components/ui/Title";
 import { getDateTimeFormatted } from "@/globals";
@@ -72,11 +76,15 @@ function getCategory(eventType: string): ActivityRow["category"] {
 }
 
 function actorName(event: AuditEvent) {
-  return event.actor?.username || event.actor?.name || event.actorUserId || "system";
+  return (
+    event.actor?.username || event.actor?.name || event.actorUserId || "system"
+  );
 }
 
 function targetName(event: AuditEvent) {
-  return event.target?.username || event.target?.name || event.targetUserId || "-";
+  return (
+    event.target?.username || event.target?.name || event.targetUserId || "-"
+  );
 }
 
 function isWithinLastThirtyDays(event: AuditEvent) {
@@ -85,13 +93,28 @@ function isWithinLastThirtyDays(event: AuditEvent) {
   return Date.now() - time <= 30 * 24 * 60 * 60 * 1000;
 }
 
+function toDateInputValue(date: Date | null) {
+  if (!date) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 export default function SecurityActivity() {
+  const { search } = useSectionParams();
   const [events, setEvents] = useState<AuditEvent[]>([]);
   const [category, setCategory] = useState<ActivityCategory>("All categories");
-  const [actorFilter, setActorFilter] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [actorFilter, setActorFilter] = useState(search);
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [occurredFrom, setOccurredFrom] = useState("");
   const [occurredTo, setOccurredTo] = useState("");
+  const [dateRange, setDateRange] = useState<{
+    startDate: Date | null;
+    endDate: Date | null;
+  }>({ startDate: null, endDate: null });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
@@ -146,6 +169,16 @@ export default function SecurityActivity() {
     };
   }, [category, debouncedSearch, occurredFrom, occurredTo, page, pageSize]);
 
+  const handleDateRangeChange = (range: { startDate: Date; endDate: Date }) => {
+    setDateRange({
+      startDate: range.startDate,
+      endDate: range.endDate,
+    });
+    setOccurredFrom(toDateInputValue(range.startDate));
+    setOccurredTo(toDateInputValue(range.endDate));
+    setPage(1);
+  };
+
   const rows = useMemo<ActivityRow[]>(
     () =>
       events.map((event) => ({
@@ -166,9 +199,15 @@ export default function SecurityActivity() {
     lifecycle: recentEvents.filter(
       (event) => getCategory(event.eventType) === "Lifecycle",
     ).length,
-    access: recentEvents.filter((event) => getCategory(event.eventType) === "Access").length,
-    sessions: recentEvents.filter((event) => getCategory(event.eventType) === "Session").length,
-    keycloak: recentEvents.filter((event) => getCategory(event.eventType) === "Keycloak").length,
+    access: recentEvents.filter(
+      (event) => getCategory(event.eventType) === "Access",
+    ).length,
+    sessions: recentEvents.filter(
+      (event) => getCategory(event.eventType) === "Session",
+    ).length,
+    keycloak: recentEvents.filter(
+      (event) => getCategory(event.eventType) === "Keycloak",
+    ).length,
   };
 
   const columns: DataTableColumn<ActivityRow>[] = [
@@ -181,7 +220,9 @@ export default function SecurityActivity() {
       id: "category",
       header: "CATEGORY",
       cell: (row) => (
-        <StatusChip tone={categoryTone[row.category]}>{row.category}</StatusChip>
+        <StatusChip tone={categoryTone[row.category]}>
+          {row.category}
+        </StatusChip>
       ),
     },
     { id: "actor", header: "ACTOR", accessorKey: "actor" },
@@ -237,45 +278,32 @@ export default function SecurityActivity() {
       <DataTable
         title="Activity History"
         description={
-          isLoading
-            ? "Loading audit events..."
-            : `${rows.length} visible on this page, ${total} total event${total === 1 ? "" : "s"}`
+          isLoading ? (
+            <div className="horizontal-layout">
+              <Loader />
+              <span>Loading audit events...</span>
+            </div>
+          ) : (
+            `${rows.length} visible on this page, ${total} total event${total === 1 ? "" : "s"}`
+          )
         }
         headerAside={
           <div className="flex flex-wrap items-center gap-2">
-            <select
-              value={category}
-              onChange={(event) => {
-                setCategory(event.target.value as ActivityCategory);
+            <Selector
+              options={categories}
+              selectedOption={category}
+              setSelectedOption={(nextValue) => {
+                const nextCategory = nextValue as ActivityCategory;
+                setCategory(nextCategory);
                 setPage(1);
               }}
-              className="rounded-[8px] border border-(--terciary-grey) bg-white px-3 py-2 text-style__small-text"
-            >
-              {categories.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-            <input
-              type="date"
-              value={occurredFrom}
-              onChange={(event) => {
-                setOccurredFrom(event.target.value);
-                setPage(1);
-              }}
-              className="rounded-[8px] border border-(--terciary-grey) bg-white px-3 py-2 text-style__small-text"
-              aria-label="Audit events from date"
+              selectFirstOption={false}
             />
-            <input
-              type="date"
-              value={occurredTo}
-              onChange={(event) => {
-                setOccurredTo(event.target.value);
-                setPage(1);
-              }}
-              className="rounded-[8px] border border-(--terciary-grey) bg-white px-3 py-2 text-style__small-text"
-              aria-label="Audit events to date"
+
+            <DateRangePicker
+              startDate={dateRange.startDate}
+              endDate={dateRange.endDate}
+              onChange={handleDateRangeChange}
             />
           </div>
         }

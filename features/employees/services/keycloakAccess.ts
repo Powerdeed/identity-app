@@ -1,4 +1,4 @@
-import { identityApiRequest } from "@/lib/api/identityApiRequest";
+import { apiRequest } from "@lib";
 
 export type KeycloakGroup = { id: string; name: string; path?: string };
 export type KeycloakRole = { id: string; name: string; description?: string };
@@ -22,13 +22,13 @@ export type KeycloakUserAccess = {
 export const getEmployeeKeycloakAccess = (
   keycloakUserId: string,
 ): Promise<KeycloakUserAccess> =>
-  identityApiRequest({
+  apiRequest({
     method: "GET",
     url: `/admin/keycloak/users/${keycloakUserId}/access`,
   });
 
 export async function getKeycloakGroups(): Promise<KeycloakGroup[]> {
-  const response = await identityApiRequest<{ groups: KeycloakGroup[] }>({
+  const response = await apiRequest<{ groups: KeycloakGroup[] }>({
     method: "GET",
     url: "/admin/keycloak/groups",
   });
@@ -36,7 +36,7 @@ export async function getKeycloakGroups(): Promise<KeycloakGroup[]> {
 }
 
 export async function getKeycloakRealmRoles(): Promise<KeycloakRole[]> {
-  const response = await identityApiRequest<{ roles: KeycloakRole[] }>({
+  const response = await apiRequest<{ roles: KeycloakRole[] }>({
     method: "GET",
     url: "/admin/keycloak/realm-roles",
   });
@@ -44,7 +44,7 @@ export async function getKeycloakRealmRoles(): Promise<KeycloakRole[]> {
 }
 
 export async function getKeycloakClients(): Promise<KeycloakClient[]> {
-  const response = await identityApiRequest<{ clients: KeycloakClient[] }>({
+  const response = await apiRequest<{ clients: KeycloakClient[] }>({
     method: "GET",
     url: "/admin/keycloak/clients",
   });
@@ -54,7 +54,7 @@ export async function getKeycloakClients(): Promise<KeycloakClient[]> {
 export async function getKeycloakClientRoles(
   clientId: string,
 ): Promise<KeycloakRole[]> {
-  const response = await identityApiRequest<{ roles: KeycloakRole[] }>({
+  const response = await apiRequest<{ roles: KeycloakRole[] }>({
     method: "GET",
     url: `/admin/keycloak/clients/${clientId}/roles`,
   });
@@ -65,7 +65,7 @@ export const addEmployeeKeycloakGroup = (
   keycloakUserId: string,
   groupId: string,
 ) =>
-  identityApiRequest<{ revokedSessionCount: number }>({
+  apiRequest<{ revokedSessionCount: number }>({
     method: "POST",
     url: `/admin/keycloak/users/${keycloakUserId}/groups/${groupId}`,
   });
@@ -74,7 +74,7 @@ export const removeEmployeeKeycloakGroup = (
   keycloakUserId: string,
   groupId: string,
 ) =>
-  identityApiRequest<{ revokedSessionCount: number }>({
+  apiRequest<{ revokedSessionCount: number }>({
     method: "DELETE",
     url: `/admin/keycloak/users/${keycloakUserId}/groups/${groupId}`,
   });
@@ -89,7 +89,7 @@ export const addEmployeeKeycloakRole = (
   keycloakUserId: string,
   input: KeycloakRoleInput,
 ) =>
-  identityApiRequest<{ revokedSessionCount: number }>({
+  apiRequest<{ revokedSessionCount: number }>({
     method: "POST",
     url: `/admin/keycloak/users/${keycloakUserId}/roles`,
     data: input,
@@ -99,7 +99,7 @@ export const removeEmployeeKeycloakRole = (
   keycloakUserId: string,
   input: KeycloakRoleInput,
 ) =>
-  identityApiRequest<{ revokedSessionCount: number }>({
+  apiRequest<{ revokedSessionCount: number }>({
     method: "DELETE",
     url: `/admin/keycloak/users/${keycloakUserId}/roles`,
     data: input,

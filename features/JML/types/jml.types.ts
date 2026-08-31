@@ -5,7 +5,7 @@ import type {
   RoleId,
   User,
   UserStatus,
-} from "@/app/auth";
+} from "@/globals/types/user.type";
 import type { MoveReasonCode } from "../constants/MOVE_REASONS";
 import type { LeaverReasonCode } from "../constants/LEAVER_REASONS";
 

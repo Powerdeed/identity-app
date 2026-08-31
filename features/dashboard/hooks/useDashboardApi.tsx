@@ -1,150 +1,64 @@
-"use clients";
+"use client";
 
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { useEffect, useState } from "react";
+import { getDashboardData } from "../services/getashboardData";
+import { execute } from "@/lib";
 
-export type CardDesc = {
-  value: number;
-  desc: string;
-  color: string;
+export type DashboardMetric = {
+  pendingActivation: number;
+  activeWorkforce: number;
+  suspended: number;
+  expiringTemporaryAccess: number;
+  activeSessions: number;
+  overdueReviews: number;
 };
 
-export type Card = {
-  [x: string]: CardDesc;
-};
-
-export type Action = {
-  actionType: string;
-  action: string;
+export type DashboardAction = {
+  id: string;
+  type: "provision" | "review";
+  title: string;
   summary: string;
-  icon: IconProp;
-  color: string;
+  href: string;
 };
 
-export type Change = {
-  changeType: string;
-  change: string;
-  time: string;
+export type DashboardChange = {
+  id: string;
+  category: "lifecycle" | "access" | "session" | "keycloak";
+  eventType: string;
+  occurredAt: string;
+  actorName: string | null;
+  targetName: string | null;
+};
+
+export type DashboardData = {
+  metrics: DashboardMetric;
+  actionQueue: DashboardAction[];
+  recentChanges: DashboardChange[];
 };
 
 export default function useDashboardApi() {
-  const cardData: Card = {
-    "PENDING ACTIVATION": {
-      value: 1,
-      desc: "Awaiting provisioning",
-      color: "text-(--secondary-red)",
-    },
-    "ACTIVE WORKFORCE": {
-      value: 9,
-      desc: "Enabled accounts",
-      color: "text-(--primary-green)",
-    },
-    SUSPENDED: {
-      value: 1,
-      desc: "Access blocked",
-      color: "text-(--secondary-red)",
-    },
-    "EXPIRING TEMP ACCESS": {
-      value: 3,
-      desc: "Within 7 days",
-      color: "text-(--secondary-red)",
-    },
-    "ACTIVE SESSIONS": {
-      value: 11,
-      desc: "Across all devices",
-      color: "text-(--secondary-blue)",
-    },
-    "OVERDUE REVIEWS": {
-      value: 2,
-      desc: "Require attention",
-      color: "text-(--primary-red)",
-    },
-  };
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const actionQueue: Action[] = [
-    {
-      actionType: "Provision",
-      action: "Tobias Richter",
-      summary: "Awaiting provisioning",
-      icon: ["fas", "user-plus"],
-      color: "text-(--secondary-blue)",
-    },
-    {
-      actionType: "Review",
-      action: "Chiamaka Eze — cms:publisher",
-      summary: "Temporary access expires in 2 days",
-      icon: ["far", "clock"],
-      color: "text-(--primary-yellow)",
-    },
-    {
-      actionType: "Escalate",
-      action: "Executive Access Review",
-      summary: "Overdue by 13 days — 30% complete",
-      icon: ["fas", "triangle-exclamation"],
-      color: "text-(--secondary-red)",
-    },
-    {
-      actionType: "Inspect",
-      action: "Musa Diallo",
-      summary: "Recently suspended — verify access cleared",
-      icon: ["fas", "ban"],
-      color: "text-(--primary-red)",
-    },
-    {
-      actionType: "View",
-      action: "CMS Publisher Role Audit",
-      summary: "Escalated — awaiting reviewer response",
-      icon: ["far", "clock"],
-      color: "text-(--primary-yellow)",
-    },
-    {
-      actionType: "View Queue",
-      action: "3 pending provision requests",
-      summary: "Keycloak users matched — awaiting identity setup",
-      icon: ["fas", "user-plus"],
-      color: "text-(--secondary-blue)",
-    },
-  ];
+  useEffect(() => {
+    let active = true;
 
-  const changeTypeColor = {
-    "Lifecycle-provision": "bg-(--primary-blue)",
-    "Lifecycle-suspend": "bg-(--primary-red)",
-    "Lifecycle-archive": "bg-(--primary-grey)",
-    "Access-add": "bg-(--primary-green)",
-    "Access-remove": "bg-(--primary-red)",
-  };
+    const fetchDashboardData = async () =>
+      execute(getDashboardData, {
+        setLoading: (loading) => active && setIsLoading(loading),
+        setError: (error) => active && setError(error),
+        onSuccess: (result) => {
+          if (active) setData(result);
+        },
+      });
 
-  const recentChanges: Change[] = [
-    {
-      changeType: "Lifecycle-provision",
-      change: "Tobias Richter provisioned",
-      time: "3 days ago",
-    },
-    {
-      changeType: "Lifecycle-suspend",
-      change: "Musa Diallo suspended",
-      time: "14 days ago",
-    },
-    {
-      changeType: "Lifecycle-archive",
-      change: "Chiamaka Eze archived",
-      time: "62 days ago",
-    },
-    {
-      changeType: "Access-add",
-      change: "platform:engineer → Priya Sharma",
-      time: "Today 08:30",
-    },
-    {
-      changeType: "Access-add",
-      change: "finance:analyst group → Kwame Asante",
-      time: "Yesterday",
-    },
-    {
-      changeType: "Access-remove",
-      change: "ops:deployer removed — Musa Diallo",
-      time: "14 days ago",
-    },
-  ];
+    fetchDashboardData();
 
-  return { cardData, actionQueue, recentChanges, changeTypeColor };
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return { data, isLoading, error };
 }

@@ -49,8 +49,6 @@ import {
   faCalendar,
 } from "@fortawesome/free-regular-svg-icons";
 
-import {} from "@fortawesome/free-brands-svg-icons";
-
 library.add(
   faBars,
   faXmark,

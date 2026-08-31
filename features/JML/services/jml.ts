@@ -1,5 +1,5 @@
-import type { EmploymentProfile } from "@/app/auth";
-import { identityApiRequest } from "@/lib/api/identityApiRequest";
+import type { EmploymentProfile } from "@/globals/types/user.type";
+import { apiRequest } from "@lib";
 import type {
   AccessRegistry,
   JMLAccessAssignment,
@@ -19,7 +19,7 @@ import type { MoveReasonCode } from "../constants/MOVE_REASONS";
 export const searchKeycloakUsers = async (
   search: string,
 ): Promise<KeycloakUser[]> => {
-  const data = await identityApiRequest<{ users: KeycloakUser[] }>({
+  const data = await apiRequest<{ users: KeycloakUser[] }>({
     method: "GET",
     url: "/admin/keycloak/users",
     params: { search },
@@ -31,7 +31,7 @@ export const searchKeycloakUsers = async (
 export const provisionFromKeycloak = async (
   keycloakUserId: string,
 ): Promise<JMLProvisionedUser> => {
-  const data = await identityApiRequest<{ user: JMLProvisionedUser }>({
+  const data = await apiRequest<{ user: JMLProvisionedUser }>({
     method: "POST",
     url: "/admin/users/provision-from-keycloak",
     data: {
@@ -47,7 +47,7 @@ export const updateJMLEmployment = async (
   userId: string,
   employment: EmploymentProfile,
 ): Promise<JMLProvisionedUser> => {
-  const data = await identityApiRequest<{ user: JMLProvisionedUser }>({
+  const data = await apiRequest<{ user: JMLProvisionedUser }>({
     method: "PATCH",
     url: `/users/${userId}`,
     data: { employment },
@@ -58,11 +58,11 @@ export const updateJMLEmployment = async (
 
 export const getJMLAccessOptions = async () => {
   const [groupsData, registry] = await Promise.all([
-    identityApiRequest<{ groups: KeycloakGroup[] }>({
+    apiRequest<{ groups: KeycloakGroup[] }>({
       method: "GET",
       url: "/admin/keycloak/groups",
     }),
-    identityApiRequest<AccessRegistry>({
+    apiRequest<AccessRegistry>({
       method: "GET",
       url: "/permissions/registry",
     }),
@@ -75,16 +75,13 @@ export const getJMLAccessOptions = async () => {
 };
 
 export const getJMLKeycloakAccess = (keycloakUserId: string) =>
-  identityApiRequest<KeycloakUserAccess>({
+  apiRequest<KeycloakUserAccess>({
     method: "GET",
     url: `/admin/keycloak/users/${keycloakUserId}/access`,
   });
 
-export const addJMLKeycloakGroup = (
-  keycloakUserId: string,
-  groupId: string,
-) =>
-  identityApiRequest<{ revokedSessionCount: number }>({
+export const addJMLKeycloakGroup = (keycloakUserId: string, groupId: string) =>
+  apiRequest<{ revokedSessionCount: number }>({
     method: "POST",
     url: `/admin/keycloak/users/${keycloakUserId}/groups/${groupId}`,
   });
@@ -93,7 +90,7 @@ export const updateJMLAccess = async (
   userId: string,
   access: JMLAccessAssignment,
 ): Promise<JMLProvisionedUser> => {
-  const data = await identityApiRequest<{ user: JMLProvisionedUser }>({
+  const data = await apiRequest<{ user: JMLProvisionedUser }>({
     method: "PATCH",
     url: `/users/${userId}/access`,
     data: { access },
@@ -105,7 +102,7 @@ export const updateJMLAccess = async (
 export const activateJMLUser = async (
   userId: string,
 ): Promise<JMLProvisionedUser> => {
-  const data = await identityApiRequest<{ user: JMLProvisionedUser }>({
+  const data = await apiRequest<{ user: JMLProvisionedUser }>({
     method: "POST",
     url: `/users/${userId}/activate`,
     data: { reason: "JML joiner workflow completed" },
@@ -117,7 +114,7 @@ export const activateJMLUser = async (
 export const searchActiveJMLEmployees = async (
   search: string,
 ): Promise<JMLProvisionedUser[]> => {
-  const data = await identityApiRequest<{
+  const data = await apiRequest<{
     users: JMLProvisionedUser[];
     total: number;
     page: number;
@@ -135,7 +132,7 @@ export const moveJMLEmployee = (
   userId: string,
   input: MoveEmployeeInput,
 ): Promise<MoveEmployeeResult> =>
-  identityApiRequest<MoveEmployeeResult>({
+  apiRequest<MoveEmployeeResult>({
     method: "POST",
     url: `/users/${userId}/move`,
     data: input,
@@ -145,7 +142,7 @@ export const offboardJMLUser = (
   userId: string,
   input: LeaverOffboardInput,
 ): Promise<LeaverOffboardResult> =>
-  identityApiRequest<LeaverOffboardResult>({
+  apiRequest<LeaverOffboardResult>({
     method: "POST",
     url: `/admin/users/${userId}/offboard`,
     data: input,
@@ -162,7 +159,7 @@ export const getEmployeeAssignmentHistory = (
     pageSize?: number;
   } = {},
 ) =>
-  identityApiRequest<AssignmentHistoryPage>({
+  apiRequest<AssignmentHistoryPage>({
     method: "GET",
     url: `/users/${userId}/assignment-history`,
     params,

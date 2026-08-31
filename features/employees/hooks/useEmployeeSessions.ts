@@ -7,7 +7,7 @@ import {
   revokeAllEmployeeSessions,
   revokeEmployeeSession,
 } from "../services/employeeSessions";
-import { toSessionDeviceRow } from "../utils/sessions";
+import { toSessionDeviceRow } from "@/features/sessions-and-devices/utils/sessions";
 import useEmployees from "./useEmployees";
 
 export default function useEmployeeSessions() {

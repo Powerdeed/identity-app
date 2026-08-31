@@ -1,9 +1,13 @@
-import { User, UserPermission, UserSession } from "../types/user.type";
-import { identityApi } from "@lib/api/identityAxios";
-import { identityApiRequest } from "@lib/api/identityApiRequest";
+import {
+  User,
+  UserPermission,
+  UserSession,
+} from "../../../globals/types/user.type";
+import { api } from "@/lib/api/axios";
+import { apiRequest } from "@lib";
 
 export const getCurrentUser = async () => {
-  const session = await identityApiRequest<{
+  const session = await apiRequest<{
     user: User;
     permissions: UserPermission[];
     sessionId: string;
@@ -22,7 +26,7 @@ export const getCurrentUser = async () => {
 };
 
 export const getSessions = async () => {
-  const res = await identityApi.get<{
+  const res = await api.get<{
     success: boolean;
     data: { sessions: UserSession[] };
   }>("/auth/sessions");
@@ -30,4 +34,4 @@ export const getSessions = async () => {
   return res.data.data.sessions;
 };
 
-export const signOutIdentitySession = () => identityApi.post("/auth/sign-out");
+export const signOutIdentitySession = () => api.post("/auth/sign-out");

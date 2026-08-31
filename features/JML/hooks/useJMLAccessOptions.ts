@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import type { RoleId } from "@/app/auth";
+import type { RoleId } from "@/globals/types/user.type";
 import { execute } from "@/lib";
 import useJML from "./useJML";
 import {

@@ -1,4 +1,4 @@
-import { identityApiRequest } from "@/lib/api/identityApiRequest";
+import { apiRequest } from "@lib";
 import type { AuditData } from "@/features/employees/types/audit.types";
 
 export const getAuditEvents = (params: {
@@ -10,7 +10,7 @@ export const getAuditEvents = (params: {
   page?: number;
   pageSize?: number;
 }) =>
-  identityApiRequest<AuditData>({
+  apiRequest<AuditData>({
     method: "GET",
     url: "/admin/audit-events",
     params,

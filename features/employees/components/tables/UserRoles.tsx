@@ -3,7 +3,7 @@
 import { faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import type { RoleAssignment } from "@/app/auth";
+import type { RoleAssignment } from "@/globals/types/user.type";
 import Button from "@/global-components/ui/Button";
 import DataTable, {
   type DataTableColumn,

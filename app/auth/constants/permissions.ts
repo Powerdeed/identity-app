@@ -1,4 +1,4 @@
-import { User, UserPermission } from "../types/user.type";
+import { User, UserPermission } from "../../../globals/types/user.type";
 
 export const PERMISSIONS = {
   IDENTITY_DASHBOARD_MANAGE: "identity.dashboard.manage",

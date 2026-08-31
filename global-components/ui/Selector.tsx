@@ -58,7 +58,7 @@ export default function Selector({
       </div>
 
       {isClicked && (
-        <ul className="selector-dropdown w-full text-style__small-text">
+        <ul className="selector-dropdown w-full text-style__small-text translate-y-2.5">
           {options.map((option) => (
             <li
               key={option}

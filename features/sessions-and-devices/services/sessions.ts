@@ -1,16 +1,5 @@
-import type { User, UserSession } from "@/app/auth";
-import { identityApiRequest } from "@/lib/api/identityApiRequest";
-
-export type WorkforceSession = UserSession & {
-  user: Pick<User, "id" | "name" | "email" | "username" | "status">;
-};
-
-export type WorkforceSessionPage = {
-  sessions: WorkforceSession[];
-  total: number;
-  page: number;
-  pageSize: number;
-};
+import { apiRequest } from "@lib";
+import { WorkforceSessionPage } from "../types/sessions.types";
 
 export const getWorkforceSessions = (params: {
   search?: string;
@@ -18,14 +7,14 @@ export const getWorkforceSessions = (params: {
   page?: number;
   pageSize?: number;
 }) =>
-  identityApiRequest<WorkforceSessionPage>({
+  apiRequest<WorkforceSessionPage>({
     method: "GET",
     url: "/admin/sessions",
     params,
   });
 
 export const revokeWorkforceSession = (userId: string, sessionId: string) =>
-  identityApiRequest<{ message: string }>({
+  apiRequest<{ message: string }>({
     method: "POST",
     url: `/admin/users/${userId}/sessions/${sessionId}/revoke`,
   });
