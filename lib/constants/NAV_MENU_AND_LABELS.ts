@@ -5,7 +5,7 @@ export const menuItems = [
   {
     label: "Dashboard",
     icon: "sliders",
-    requiredPermission: PERMISSIONS.IDENTITY_DASHBOARD_MANAGE,
+    requiredPermission: PERMISSIONS.IDENTITY_USERS_READ,
   },
   {
     label: "Employees",
