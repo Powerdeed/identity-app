@@ -134,6 +134,30 @@ Important boundary:
 
 Departments and job profiles are persisted catalog records. Session policy, access policy, and integration status are currently displayed as operating documentation until editable policy APIs are introduced.
 
+## JML Workflows
+
+Route: `/jml`
+
+Purpose: run joiner, mover, and leaver workflows against identity-service and the Keycloak administration bridge.
+
+Data sources:
+
+- `GET /admin/keycloak/users`
+- `POST /admin/users/provision-from-keycloak`
+- `PATCH /users/:id`
+- `PATCH /users/:id/access`
+- `POST /users/:id/activate`
+- `POST /users/:id/move`
+- `POST /admin/users/:id/offboard`
+
+Joiner boundary:
+
+Provisioning creates or syncs a Powerdeed identity profile in `pending` status. Pending users cannot sign in to Powerdeed apps until the workflow reaches activation. If an admin refreshes or leaves midway, the Keycloak search result must allow a `pending` provisioned user to be selected again so the joiner workflow can resume and activate the same profile.
+
+Employment boundary:
+
+Changing the selected department must clear department-scoped selections such as job profile and manager. This prevents stale selections from another department from reaching identity-service validation.
+
 ## Mutation Permission Rules
 
 Administrative pages should not show write controls unless the signed-in user's effective permissions allow the mutation:

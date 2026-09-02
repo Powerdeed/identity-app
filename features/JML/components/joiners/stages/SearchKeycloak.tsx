@@ -36,6 +36,9 @@ export default function SearchKeycloak() {
             const initialBackgroundColor = getRandomClassNameColor(employee.id);
             const isSelected = search.selectedUserId === employee.id;
             const isProvisioned = Boolean(employee.powerdeedUserId);
+            const canResumeProvisioning = employee.powerdeedStatus === "pending";
+            const isBlockedProvisionedUser =
+              isProvisioned && !canResumeProvisioning;
 
             return (
               <div
@@ -63,13 +66,15 @@ export default function SearchKeycloak() {
                   <Button
                     buttonType="light"
                     buttonText={
-                      isProvisioned
+                      isBlockedProvisionedUser
                         ? "Already provisioned"
                         : isSelected
                           ? "Selected"
+                          : canResumeProvisioning
+                            ? "Resume"
                           : "Select"
                     }
-                    disabled={isProvisioned || isSelected}
+                    disabled={isBlockedProvisionedUser || isSelected}
                     clickAction={() => {
                       search.selectUser(employee);
                     }}

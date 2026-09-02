@@ -249,7 +249,12 @@ export function jmlReducer(state: JMLState, action: JMLAction): JMLState {
     case "search/loading":
       return { ...state, isSearching: action.loading };
     case "identity/select":
-      return { ...state, selectedKeycloakUser: action.user, error: "" };
+      return {
+        ...state,
+        selectedKeycloakUser: action.user,
+        provisionedUser: null,
+        error: "",
+      };
     case "profile/set":
       return { ...state, provisionedUser: action.user };
     case "employment/update":
@@ -267,6 +272,8 @@ export function jmlReducer(state: JMLState, action: JMLAction): JMLState {
           departmentName: action.name,
           jobProfileId: "",
           jobTitle: "",
+          managerId: "",
+          managerName: "",
         },
       };
     case "employment/job-profile-select":

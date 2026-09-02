@@ -21,8 +21,8 @@ const openSans = Open_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "PTR Identity",
-    template: "%s | PTR Identity", // Template for child pages
+    default: "Powerdeed Identity",
+    template: "%s | Powerdeed Identity",
   },
   description:
     "This application is Powerdeed's internal governance workspace for managing staff identity, employment context, application access, Keycloak baseline access, Powerdeed sessions, account lifecycle, access reviews, and identity-security activity.",
@@ -32,12 +32,12 @@ export const metadata: Metadata = {
   },
   // You can also define specific Open Graph, Twitter, etc. metadata here
   openGraph: {
-    title: "PTR Identity",
+    title: "Powerdeed Identity",
     description:
       "This application is Powerdeed's internal governance workspace for managing staff identity, employment context, application access, Keycloak baseline access, Powerdeed sessions, account lifecycle, access reviews, and identity-security activity.",
     type: "website",
-    url: "https://identity.powerdeed.co.ke",
-    siteName: "PTR Identity",
+    url: "https://account.powerdeed.co.ke",
+    siteName: "Powerdeed Identity",
     locale: "en_US",
   },
 };
